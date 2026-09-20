@@ -521,7 +521,7 @@ h1 span { color: var(--cyan); }
 
 .credentials {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -555,7 +555,36 @@ h1 span { color: var(--cyan); }
   object-fit: contain;
 }
 
-.credential span {
+.credential-mark {
+  display: grid;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(120,216,255,0.38);
+  border-radius: 15px;
+  color: var(--cyan);
+  background: rgba(120,216,255,0.08);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.credential-mark.claude {
+  border-color: rgba(142,230,179,0.38);
+  color: var(--green);
+  background: rgba(142,230,179,0.08);
+  font-size: 9px;
+}
+
+.credential-mark.cncf {
+  border-color: rgba(255,204,118,0.42);
+  color: var(--amber);
+  background: rgba(255,204,118,0.08);
+}
+
+.credential > span:not(.credential-mark) {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
@@ -695,7 +724,7 @@ footer {
   .hero-card { min-height: auto; }
   .cards { grid-template-columns: 1fr 1fr; }
   .credentials,
-  .credly-grid { grid-template-columns: 1fr; }
+  .credly-grid { grid-template-columns: 1fr 1fr; }
   .signal-strip { grid-template-columns: 1fr 1fr; }
   .signal-item:nth-child(2) { border-right: 0; }
   .signal-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
@@ -711,6 +740,8 @@ footer {
   .hero { padding-top: 48px; padding-bottom: 64px; }
   h1 { font-size: clamp(48px, 15vw, 78px); }
   .cards { grid-template-columns: 1fr; }
+  .credentials,
+  .credly-grid { grid-template-columns: 1fr; }
   .publish-card { grid-template-columns: 1fr; }
   .publish-mark { width: 54px; height: 54px; }
   .signal-strip { grid-template-columns: 1fr; }
