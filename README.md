@@ -4,6 +4,7 @@ Personal publishing site for Artsiom Hontar.
 
 The site positions Artsiom as an AI engineer with a deep backend and architecture background.
 It covers backend systems, cloud infrastructure, distributed reliability, practical AI-assisted engineering, technical writing, and presentation decks.
+The credentials section includes selected certification artwork and public Credly badge history.
 
 ## Structure
 

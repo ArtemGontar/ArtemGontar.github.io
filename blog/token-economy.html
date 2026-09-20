@@ -36,6 +36,11 @@
     line-height: 1.65;
   }
   a { color: var(--accent); }
+  .article a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .article a:hover { color: #c9dcff; }
   .masthead {
     display: flex;
     justify-content: space-between;
@@ -194,7 +199,7 @@
   <article class="article" id="article">
     <p>Loading article…</p>
   </article>
-  <p class="article-footer"><a href="../">Back to the presentation</a> · <a href="token-economy.md">Read the Markdown source</a></p>
+  <p class="article-footer"><a href="../">Back to home</a> · <a href="../decks/token-economy/">Open the presentation</a> · <a href="token-economy.md">Read the Markdown source</a></p>
 </main>
 
 <script>
@@ -221,6 +226,15 @@
       stash(`<figure><img src="${src}" alt="${alt}" loading="lazy"><figcaption>${alt}</figcaption></figure>`));
     text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_, label, url) =>
       stash(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`));
+    text = text.replace(/https?:\/\/[^\s<]+/g, (rawUrl) => {
+      let url = rawUrl;
+      let trailing = "";
+      while (/[.,;:!?)]$/.test(url)) {
+        trailing = url.slice(-1) + trailing;
+        url = url.slice(0, -1);
+      }
+      return `${stash(`<a href="${url}" target="_blank" rel="noopener">${url}</a>`)}${trailing}`;
+    });
     text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
     return text.replace(/\u0000(\d+)\u0000/g, (_, index) => tokens[Number(index)]);
