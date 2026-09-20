@@ -344,7 +344,7 @@ h1 {
   line-height: 1.3;
 }
 
-.credential-record span:not(.record-mark) {
+.credential-record > div > span {
   display: block;
   margin-top: 4px;
   color: var(--muted);
@@ -355,28 +355,6 @@ h1 {
 .credential-record a {
   color: var(--cyan);
   text-decoration: none;
-}
-
-.record-mark {
-  display: grid;
-  width: 58px;
-  height: 58px;
-  place-items: center;
-  border: 1px solid rgba(120,216,255,0.38);
-  border-radius: 15px;
-  color: var(--cyan);
-  background: rgba(120,216,255,0.08);
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 11px;
-  font-weight: 900;
-  text-align: center;
-}
-
-.record-mark.claude {
-  border-color: rgba(142,230,179,0.38);
-  color: var(--green);
-  background: rgba(142,230,179,0.08);
-  font-size: 9px;
 }
 
 .record-badge {
@@ -550,9 +528,8 @@ h1 {
   .entry-company,
   .section-label { margin-bottom: 8px; font-size: 8px; }
   .project-card strong,
-  .credential-record span:not(.record-mark) { font-size: 8px; }
+  .credential-record > div > span { font-size: 8px; }
   .credential-record { min-height: 58px; grid-template-columns: 36px minmax(0, 1fr); }
-  .record-mark,
   .record-badge,
   .record-badge img { width: 36px; height: 36px; }
   .closing-grid { gap: 20px; }

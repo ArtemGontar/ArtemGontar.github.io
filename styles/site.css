@@ -555,36 +555,7 @@ h1 span { color: var(--cyan); }
   object-fit: contain;
 }
 
-.credential-mark {
-  display: grid;
-  flex: 0 0 54px;
-  width: 54px;
-  height: 54px;
-  place-items: center;
-  border: 1px solid rgba(120,216,255,0.38);
-  border-radius: 15px;
-  color: var(--cyan);
-  background: rgba(120,216,255,0.08);
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 10px;
-  font-weight: 900;
-  text-align: center;
-}
-
-.credential-mark.claude {
-  border-color: rgba(142,230,179,0.38);
-  color: var(--green);
-  background: rgba(142,230,179,0.08);
-  font-size: 9px;
-}
-
-.credential-mark.cncf {
-  border-color: rgba(255,204,118,0.42);
-  color: var(--amber);
-  background: rgba(255,204,118,0.08);
-}
-
-.credential > span:not(.credential-mark) {
+.credential > span {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
