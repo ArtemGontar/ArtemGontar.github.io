@@ -72,6 +72,30 @@
   .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
   .brand-mark { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 8px; background: linear-gradient(135deg, #8a7bff, #37c8ff); color: #0c0a1a; font-size: 13px; font-weight: 900; }
   .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .deck-nav {
+    position: fixed;
+    top: 18px;
+    left: 22px;
+    z-index: 50;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(10, 6, 24, 0.72);
+    backdrop-filter: blur(14px);
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .deck-nav a {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .deck-nav a:hover { color: #fff; }
+  .deck-nav .deck-brand { color: #fff; }
 
   .grid-2, .grid-3, .grid-4, .grid-5 { display: grid; align-content: start; gap: 14px; }
   .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -249,9 +273,23 @@
   .overview-mode .slide:hover { border-color: #37c8ff; }
   .overview-mode .slide > .content { overflow: hidden; transform: scale(0.42); transform-origin: top left; width: 235%; height: 170%; }
   .overview-mode .slide > header h1, .overview-mode .slide > header h2 { font-size: 22px; }
+  @media (max-width: 700px) {
+    .deck-nav {
+      top: 10px;
+      left: 10px;
+      gap: 6px 10px;
+      padding: 7px 9px;
+      font-size: 10px;
+    }
+  }
 </style>
 </head>
 <body>
+<nav class="deck-nav" aria-label="Presentation navigation">
+  <a class="deck-brand" href="../../">Artsiom Hontar</a>
+  <a href="../../blog/token-economy.html">Article</a>
+  <a href="../../experience/">Experience</a>
+</nav>
 <main class="deck">
 
   <!-- 1: TITLE -->
@@ -273,7 +311,7 @@
         <div class="orbit-label four">⚡</div>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Token Economy</div><span>1 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Token Economy</div></footer>
     <aside class="notes">Open cold. One line: "Everyone here already uses AI daily — tonight is about spending the budget better, not about what AI is."</aside>
   </section>
 
@@ -293,7 +331,7 @@
         </div>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Intro</div><span>2 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Intro</div></footer>
     <aside class="notes">Keep to ~1 minute. Credibility, not biography. Badges shown are real, pulled from my own certification wallet — no outbound links, just the proof.</aside>
   </section>
 
@@ -323,7 +361,7 @@
         <div class="flow-step"><strong>5 · Decide</strong><span>AI vs. you</span></div>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Vocabulary & Agenda</div><span>3 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Vocabulary & Agenda</div></footer>
     <aside class="notes">Fast slide, ~60 seconds combined. Don't over-explain vocab — audience already works with these; agenda is just a map, not a discussion.</aside>
   </section>
 
@@ -369,7 +407,7 @@
         <div class="statement" style="border-color:#ff6fa3; background:rgba(255,111,163,0.08)">Anti-pattern to avoid: leaving the harness on <b>auto-router</b> permanently. Auto-routing helps if your habit is defaulting to a frontier model for everything — it saves you from yourself. But once you understand each model's real cost and ability, manual routing beats auto every time.</div>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Model selection</div><span>4 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Model selection</div></footer>
   </section>
 
   <!-- 5: HARNESS TAX -->
@@ -398,7 +436,7 @@
         <div class="statement" style="border-color:#37c8ff; background:rgba(55,200,255,0.08)">A default harness can be a hidden <b>harness tax</b>. Benchmark the <b>model × harness pair</b>, not the model alone.</div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://harnesstax.github.io/" target="_blank" rel="noopener">harnesstax.github.io</a></div><span>5 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://harnesstax.github.io/" target="_blank" rel="noopener">harnesstax.github.io</a></div></footer>
     <aside class="notes">The important distinction is cost, not a universal success-rate winner. HarnessTax reports similar quality with large cost differences, and it shows that a minimal harness can be competitive. Treat these as benchmark-specific findings, not a permanent ranking.</aside>
   </section>
 
@@ -430,7 +468,7 @@
         <div class="statement" style="border-color:#b56bff; background:rgba(181,107,255,0.08)">Check benchmarks like this one regularly — the fit between model and task type shifts every release.</div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://deepswe.datacurve.ai/" target="_blank" rel="noopener">deepswe.datacurve.ai</a></div><span>6 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://deepswe.datacurve.ai/" target="_blank" rel="noopener">deepswe.datacurve.ai</a></div></footer>
     <aside class="notes">Rankings shift fast — pull the live leaderboard before the talk instead of trusting this screenshot.</aside>
   </section>
 
@@ -461,7 +499,7 @@
       </div>
       <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08)">3× the tokens, 2× the turns, and a <b>16-point lower</b> success rate — the "convenience" of always-on MCP tools is not free.</div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/kunchenguid/gh-axi" target="_blank" rel="noopener">github.com/kunchenguid/gh-axi</a><a class="link-chip" href="https://www.scalekit.com/blog/mcp-vs-cli-use" target="_blank" rel="noopener">scalekit.com/blog/mcp-vs-cli-use</a></div><span>7 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/kunchenguid/gh-axi" target="_blank" rel="noopener">github.com/kunchenguid/gh-axi</a><a class="link-chip" href="https://www.scalekit.com/blog/mcp-vs-cli-use" target="_blank" rel="noopener">scalekit.com/blog/mcp-vs-cli-use</a></div></footer>
   </section>
 
   <!-- 7: ESCALATION + SKILL-FIRST -->
@@ -496,7 +534,7 @@
         </div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/mattpocock/skills" target="_blank" rel="noopener">github.com/mattpocock/skills</a></div><span>8 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/mattpocock/skills" target="_blank" rel="noopener">github.com/mattpocock/skills</a></div></footer>
   </section>
 
   <!-- 8: CONTEXT ENGINEERING (subagents + 1M caution) -->
@@ -523,7 +561,7 @@
         </ul>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Reduction tips</div><span>9 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Reduction tips</div></footer>
     <aside class="notes">MRCR = "multi-round co-reference resolution", an 8-needle-in-haystack retrieval test. Gemini/GPT numbers measured independently by Context Arena, not vendor self-reports.</aside>
   </section>
 
@@ -540,7 +578,7 @@
         <div class="screenshot-img"><img src="../../assets/rtk-gain.png" alt="rtk gain output: 10.0M tokens saved, 57.6% efficiency, breakdown by command"></div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/microsoft/coreutils" target="_blank" rel="noopener">github.com/microsoft/coreutils</a><a class="link-chip" href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener">github.com/BurntSushi/ripgrep</a><a class="link-chip" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">github.com/rtk-ai/rtk</a></div><span>10 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/microsoft/coreutils" target="_blank" rel="noopener">github.com/microsoft/coreutils</a><a class="link-chip" href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener">github.com/BurntSushi/ripgrep</a><a class="link-chip" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">github.com/rtk-ai/rtk</a></div></footer>
   </section>
 
   <!-- 10: HEADROOM -->
@@ -572,7 +610,7 @@
         <p class="card-copy">Accuracy held flat on GSM8K/TruthfulQA/SQuAD/BFCL in Headroom's own evals — compression, not summarization; nothing is guessed.</p>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/headroomlabs-ai/headroom" target="_blank" rel="noopener">github.com/headroomlabs-ai/headroom</a></div><span>11 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/headroomlabs-ai/headroom" target="_blank" rel="noopener">github.com/headroomlabs-ai/headroom</a></div></footer>
   </section>
 
   <!-- 11: PROMPT / READ-TOKEN CACHING -->
@@ -615,7 +653,7 @@
         </div>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Reduction tips</div><span>12 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Reduction tips</div></footer>
   </section>
 
   <!-- 12: OBSERVABILITY (self) -->
@@ -645,7 +683,7 @@
         </div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://www.aihero.dev/creating-the-perfect-claude-code-status-line" target="_blank" rel="noopener">aihero.dev/creating-the-perfect-claude-code-status-line</a></div><span>13 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://www.aihero.dev/creating-the-perfect-claude-code-status-line" target="_blank" rel="noopener">aihero.dev/creating-the-perfect-claude-code-status-line</a></div></footer>
     <aside class="notes">This is self-regulation framing, not manager surveillance — the developer watches their own agent, the same way you'd glance at CPU temp, not exact cycles. Screenshot is a real Claude Code /usage export from a Max session.</aside>
   </section>
 
@@ -670,7 +708,7 @@
         <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08)">Sessions tell you what the agent did. Git branch/PR metadata tells you why it was worth it — that correlation is still an open, unsettled part of this tooling space.</div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/delta-hq/cc-ledger" target="_blank" rel="noopener">github.com/delta-hq/cc-ledger</a><a class="link-chip" href="https://github.com/kenn-io/agentsview" target="_blank" rel="noopener">github.com/kenn-io/agentsview</a></div><span>14 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/delta-hq/cc-ledger" target="_blank" rel="noopener">github.com/delta-hq/cc-ledger</a><a class="link-chip" href="https://github.com/kenn-io/agentsview" target="_blank" rel="noopener">github.com/kenn-io/agentsview</a></div></footer>
     <aside class="notes">Be honest about maturity here: cc-ledger is a good demonstration of PR-level attribution, not a production-ready dependency to bet a team on. The broader point is that the telemetry primitives (OTel token/cost/commit/PR counters) already exist in the harnesses themselves — attribution tooling on top is still early and worth watching, or building yourself.</aside>
   </section>
 
@@ -723,7 +761,7 @@
         <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08); display:flex; align-items:center">Don't ask "Can AI do this?" Ask "Is this the best use of my remaining budget?"</div>
       </div>
     </div>
-    <footer class="footer"><div class="links"><a class="link-chip" href="https://jellyfish.co/blog/is-tokenmaxxing-cost-effective-new-data-from-jellyfish-explains/" target="_blank" rel="noopener">jellyfish.co — token usage data</a></div><span>15 / 16</span></footer>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://jellyfish.co/blog/is-tokenmaxxing-cost-effective-new-data-from-jellyfish-explains/" target="_blank" rel="noopener">jellyfish.co — token usage data</a></div></footer>
   </section>
 
   <!-- 15: THANKS -->
@@ -762,7 +800,7 @@
         </table>
       </div>
     </div>
-    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Fin</div><span>16 / 16</span></footer>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Fin</div></footer>
   </section>
 
 </main>

@@ -44,6 +44,7 @@
   .article a:hover { color: #c9dcff; }
   .masthead {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: 24px;
     max-width: 1080px;
@@ -53,11 +54,23 @@
     font-size: 13px;
     letter-spacing: 0.04em;
   }
-  .masthead a {
+  .masthead > a {
     color: #ffffff;
     font-weight: 800;
     text-decoration: none;
   }
+  .masthead nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+  }
+  .masthead nav a {
+    color: var(--muted);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .masthead nav a:hover { color: #ffffff; }
   .article-shell {
     max-width: 1080px;
     margin: 24px auto 72px;
@@ -94,7 +107,11 @@
     color: var(--muted);
     font-size: 14px;
   }
-  .article p { margin: 0 0 18px; }
+  .article p {
+    max-width: 78ch;
+    margin: 0 0 18px;
+    line-height: 1.75;
+  }
   .article strong { color: #ffffff; }
   .article code {
     padding: 2px 5px;
@@ -123,7 +140,17 @@
     margin: 0 0 22px;
     padding-left: 24px;
   }
-  .article li { margin: 6px 0; }
+  .article li {
+    margin: 6px 0;
+    line-height: 1.55;
+  }
+  .article h2 + ul {
+    margin-top: 20px;
+    padding: 16px 20px 16px 42px;
+    border-left: 4px solid var(--good);
+    border-radius: 0 12px 12px 0;
+    background: rgba(98,213,160,0.08);
+  }
   .article table {
     width: 100%;
     margin: 24px 0 28px;
@@ -183,7 +210,13 @@
     text-align: center;
   }
   @media (max-width: 640px) {
-    .masthead { padding: 18px 18px 8px; }
+    .masthead {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px 18px 8px;
+    }
+    .masthead nav { justify-content: flex-start; gap: 10px 14px; }
     .article-shell { margin-top: 12px; padding: 0 12px; }
     .article { padding: 28px 0; }
     .article table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -192,8 +225,13 @@
 </head>
 <body>
 <header class="masthead">
-  <a href="../">Token Economy</a>
-  <span>Research note · 20 September 2026</span>
+  <a href="../">Artsiom Hontar</a>
+  <nav aria-label="Article navigation">
+    <a href="../#about">About</a>
+    <a href="../#writing">Writing</a>
+    <a href="../decks/token-economy/">Deck</a>
+    <a href="../experience/">Experience</a>
+  </nav>
 </header>
 
 <main class="article-shell">
