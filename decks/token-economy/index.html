@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Economy — Spend Your AI Budget Like an Engineer</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0c0a1a;
+    --ink: #f6f4ff;
+    --muted: #b6adde;
+    --line: rgba(190, 170, 255, 0.22);
+    --panel: rgba(35, 24, 66, 0.72);
+    --shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    --radius: 22px;
+    --c-open: #8a7bff;
+    --c-model: #37c8ff;
+    --c-bench: #b56bff;
+    --c-tips: #35e0a1;
+    --c-obs: #ffb545;
+    --c-decide: #ff6fa3;
+    --claude: #cc785c;
+    --aws: #ff9900;
+  }
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--bg); color: var(--ink); font-family: "Segoe UI", Inter, Arial, sans-serif; }
+  body::before {
+    position: fixed; inset: 0; z-index: -2; content: "";
+    background:
+      radial-gradient(circle at 12% 8%, rgba(138,123,255,0.24), transparent 34%),
+      radial-gradient(circle at 88% 18%, rgba(55,200,255,0.18), transparent 32%),
+      radial-gradient(circle at 25% 92%, rgba(53,224,161,0.16), transparent 30%),
+      radial-gradient(circle at 85% 88%, rgba(255,111,163,0.16), transparent 32%),
+      var(--bg);
+  }
+  body::after {
+    position: fixed; inset: 0; z-index: -1; content: "";
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 50% 40%, black, transparent 80%);
+  }
+  a { color: inherit; }
+  .deck { position: absolute; top: 50%; left: 50%; width: 1760px; height: 990px; transform-origin: center center; container-type: size; container-name: deck; }
+  .slide {
+    position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; gap: 16px;
+    padding: clamp(26px, 3.2cqw, 58px) clamp(32px, 5.6cqw, 100px) 42px;
+    opacity: 0; visibility: hidden; transform: translateX(40px) scale(0.985);
+    transition: opacity 260ms ease, transform 320ms ease, visibility 0s linear 320ms;
+    border-top: 6px solid transparent;
+  }
+  .slide.active { opacity: 1; visibility: visible; transform: translateX(0) scale(1); transition-delay: 0s; }
+  .slide.previous { transform: translateX(-40px) scale(0.985); }
+  .sec-open   { border-top-color: var(--c-open); }
+  .sec-model  { border-top-color: var(--c-model); }
+  .sec-bench  { border-top-color: var(--c-bench); }
+  .sec-tips   { border-top-color: var(--c-tips); }
+  .sec-obs    { border-top-color: var(--c-obs); }
+  .sec-decide { border-top-color: var(--c-decide); }
+
+  .eyebrow { margin: 0 0 8px; font-size: clamp(12px, 1cqw, 16px); font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+  h1, h2, h3, p { margin-top: 0; }
+  h1 { max-width: 1100px; margin-bottom: 14px; font-size: clamp(36px, 5.2cqw, 80px); line-height: 1.02; letter-spacing: -0.03em; }
+  h2 { margin-bottom: 4px; font-size: clamp(26px, 3.1cqw, 48px); line-height: 1.05; letter-spacing: -0.02em; }
+  h3 { margin-bottom: 8px; color: #fff; font-size: clamp(15px, 1.25cqw, 21px); line-height: 1.2; }
+  .subtitle { max-width: 900px; color: var(--muted); font-size: clamp(16px, 1.6cqw, 25px); line-height: 1.4; }
+  .content { min-height: 0; align-self: stretch; overflow: auto; display: flex; flex-direction: column; justify-content: center; align-content: center; gap: 14px; }
+  .content.grid-2, .content.grid-3, .content.grid-4, .content.grid-5,
+  .content.split-40, .content.split-60, .content.split-30-70, .content.split-70-30 { align-content: center; }
+  .footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 28px; color: var(--muted); font-size: 12.5px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+  .brand-mark { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 8px; background: linear-gradient(135deg, #8a7bff, #37c8ff); color: #0c0a1a; font-size: 13px; font-weight: 900; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .grid-2, .grid-3, .grid-4, .grid-5 { display: grid; align-content: start; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .grid-5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+  .split-60 { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(260px,0.85fr); gap: 22px; align-items: stretch; }
+  .split-40 { display: grid; grid-template-columns: minmax(260px,0.8fr) minmax(0,1.2fr); gap: 22px; align-items: stretch; }
+  .split-30-70 { display: grid; grid-template-columns: minmax(220px,0.62fr) minmax(0,1.38fr); gap: 22px; align-items: stretch; }
+  .split-70-30 { display: grid; grid-template-columns: minmax(0,1.7fr) minmax(240px,1fr); gap: 22px; align-items: stretch; }
+  .stack { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+  .stack.top { justify-content: flex-start; }
+  .fill { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+  .fill .card, .fill .table-wrap { flex: none; }
+
+  .card {
+    position: relative; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius);
+    background: linear-gradient(150deg, rgba(50,34,90,0.85), rgba(20,14,40,0.7)); box-shadow: var(--shadow);
+  }
+  .card .icon { font-size: 30px; display:block; margin-bottom: 6px; }
+  .card-copy { color: var(--muted); font-size: clamp(12.5px, 1.02cqw, 17px); line-height: 1.4; }
+  .card-meme-img { max-width: 100%; max-height: 92px; width: auto; height: auto; object-fit: contain; display: block; border-radius: 10px; margin: 4px auto 8px; background: #fff; }
+  .meme-row { display: flex; align-items: center; gap: 18px; }
+  .meme-row img { max-width: 150px; width: 100%; height: auto; border-radius: 12px; flex-shrink: 0; background: #fff; box-shadow: 0 10px 22px rgba(0,0,0,0.4); }
+  .meme-row p { margin: 0; }
+  .term-card { padding: 11px 14px; }
+  .term-card .icon { display: block; margin-bottom: 3px; font-size: 21px; }
+  .term-card h3 { margin-bottom: 3px; font-size: clamp(13px, 1.05cqw, 17px); }
+  .term-card .card-copy { font-size: clamp(11px, 0.86cqw, 14px); line-height: 1.28; }
+  .title-banner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .title-banner img { height: clamp(56px, 7cqw, 92px); width: auto; border-radius: 10px; background: #fff; box-shadow: var(--shadow); flex-shrink: 0; }
+  .stat-row { display: flex; gap: 14px; }
+  .stat-chip { flex: 1; text-align: center; padding: 14px 10px; border-radius: 14px; border: 1px solid var(--line); background: rgba(35,24,66,0.55); }
+  .stat-chip b { display: block; font-size: clamp(18px, 1.6cqw, 26px); color: var(--c-model); }
+  .stat-chip span { display: block; margin-top: 4px; font-size: clamp(11px, 0.85cqw, 13px); color: var(--muted); }
+
+  .statement {
+    padding: 16px 20px; border-left: 5px solid var(--c-open); border-radius: 0 18px 18px 0;
+    background: rgba(138,123,255,0.1); color: #f1eeff; font-size: clamp(15px, 1.55cqw, 23px); font-weight: 650; line-height: 1.3;
+  }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 9px; }
+  .pill, .link-chip {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 6px 11px;
+    border: 1px solid var(--line); border-radius: 999px; background: rgba(138,123,255,0.14); color: #eae6ff;
+    font-size: 12px; font-weight: 700; text-decoration: none;
+  }
+  .link-chip:hover { border-color: #37c8ff; background: rgba(55,200,255,0.16); }
+  .link-chip::after { content: "↗"; color: #37c8ff; }
+
+  .tag { display:inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.6em; margin-left: 8px; vertical-align: middle; font-weight: 800; }
+  .tag-cheap { background: #123a2c; color: #6ef2b8; }
+  .tag-mid { background: #35300f; color: #ffd76e; }
+  .tag-frontier { background: #3a1330; color: #ff8fce; }
+
+  .clean-list { display: grid; align-content: start; gap: 9px; margin: 0; padding: 0; list-style: none; }
+  .clean-list li { position: relative; padding-left: 24px; color: #e3ddff; font-size: clamp(13px, 1.1cqw, 17px); line-height: 1.35; }
+  .clean-list li::before { position: absolute; top: 0.48em; left: 0; width: 7px; height: 7px; content: ""; border-radius: 50%; background: var(--dot, #37c8ff); box-shadow: 0 0 12px var(--dot, #37c8ff); }
+
+  .metric { display: flex; min-height: 82px; flex-direction: column; justify-content: space-between; padding: 13px 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(20,14,40,0.6); }
+  .metric strong { font-size: clamp(20px, 2.2cqw, 36px); line-height: 1; }
+  .metric span { color: var(--muted); font-size: 12px; }
+
+  .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: rgba(18,12,36,0.72); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: clamp(10.5px, 0.9cqw, 14px); }
+  th, td { padding: 9px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { background: rgba(138,123,255,0.16); color: #b7e6ff; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  tr:last-child td { border-bottom: 0; }
+  td { color: #e6e1ff; }
+  tr.win td { background: rgba(53,224,161,0.08); font-weight: 700; }
+  code { font-family: "Cascadia Code", Consolas, monospace; color: #bdf0ff; }
+
+  .bar-row { display: grid; grid-template-columns: 160px 1fr 56px; gap: 8px; align-items: center; }
+  .bar-label { font-size: 12px; color: #e3ddff; }
+  .bar-track { height: 12px; border-radius: 8px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #8a7bff, #37c8ff); }
+  .bar-value { font-size: 11px; color: var(--muted); text-align: right; }
+
+  .screenshot-slot { border: 2px dashed rgba(190,170,255,0.4); border-radius: 18px; padding: 1.6em 1em; text-align: center; background: rgba(138,123,255,0.05); }
+  .screenshot-slot .big { font-size: 34px; display: block; margin-bottom: 4px; }
+  .screenshot-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: var(--shadow); overflow: hidden; padding: 8px; }
+  .screenshot-img img { width: 100%; height: auto; max-height: 100%; object-fit: contain; border-radius: 10px; }
+  .caption { margin-top: 6px; color: var(--muted); font-size: 11.5px; text-align: center; }
+
+  .ref-table td a { color: #9fd8ff; text-decoration: none; font-weight: 700; }
+  .ref-table td a:hover { text-decoration: underline; }
+  .recap-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); align-content: start; gap: 10px; }
+  .recap-chip { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(20,14,40,0.6); font-size: 12.5px; color: #e3ddff; line-height: 1.35; }
+  .recap-chip b { display: block; color: #fff; font-size: 13px; margin-bottom: 2px; }
+
+  /* portrait photo frame */
+  .portrait-frame { width: min(30cqw, 320px); height: min(58cqh, 400px); border-radius: 20px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); flex-shrink: 0; }
+  .portrait-frame img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+  /* about-me two-column layout: image sized to content, text fills the rest */
+  .about-layout { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 40px; align-items: center; height: 100%; }
+  .name-title { margin: 0 0 6px; font-size: clamp(30px, 3.4cqw, 52px); font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+  .bio-line { max-width: 900px; color: var(--muted); font-size: clamp(16px, 1.5cqw, 23px); line-height: 1.45; }
+  .bio-line b { color: #f1eeff; }
+
+  /* real certification badge images, 3-up */
+  .badge-row { display: flex; gap: 22px; align-items: flex-end; margin-top: 6px; }
+  .badge-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; width: 140px; }
+  .badge-item img { width: 108px; height: 108px; object-fit: contain; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45)); }
+  .badge-item span { font-size: 12px; font-weight: 700; color: #e3ddff; line-height: 1.25; }
+
+  /* certification badges (list form, still available) */
+  .cert-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+  .cert-row { display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(18,12,36,0.55); }
+  .cert-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; color: #14101f; }
+  .cert-icon.claude { background: var(--claude); }
+  .cert-icon.aws { background: var(--aws); }
+  .cert-name { font-size: 12px; font-weight: 700; color: #f1eeff; line-height: 1.2; }
+  .cert-meta { font-size: 10.5px; color: var(--muted); }
+
+  /* hero orbit */
+  .hero-layout { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(320px,0.95fr); gap: 40px; align-items: center; }
+  .hero-orbit { position: relative; display: grid; width: min(34cqw, 46cqh, 400px); aspect-ratio: 1; place-items: center; justify-self: center; }
+  .hero-orbit::before, .hero-orbit::after { position: absolute; content: ""; border: 1px solid var(--line); border-radius: 50%; }
+  .hero-orbit::before { inset: 4%; }
+  .hero-orbit::after { inset: 22%; border-color: rgba(55,200,255,0.3); }
+  .hero-core { z-index: 2; display: grid; width: 128px; height: 128px; place-items: center; border: 1px solid rgba(55,200,255,0.6); border-radius: 50%; background: radial-gradient(circle, #2b1f66, #12102c 65%); box-shadow: 0 0 0 15px rgba(138,123,255,0.08), 0 0 55px rgba(55,200,255,0.25); font-size: 40px; }
+  .orbit-label { position: absolute; z-index: 3; min-width: 82px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(24,16,50,0.92); box-shadow: var(--shadow); text-align: center; font-size: 24px; }
+  .orbit-label.one { top: 0; left: 50%; transform: translateX(-50%); }
+  .orbit-label.two { top: 50%; right: 0; transform: translateY(-50%); }
+  .orbit-label.three { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .orbit-label.four { top: 50%; left: 0; transform: translateY(-50%); }
+
+  /* vertical stepper */
+  .stepper { display: grid; align-content: start; gap: 8px; position: relative; }
+  .step-row { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(20,14,40,0.55); }
+  .step-num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; background: rgba(138,123,255,0.22); color: #cdd6ff; }
+  .step-row strong { font-size: 12.5px; color: #fff; }
+  .step-row span { font-size: 11px; color: var(--muted); }
+
+  /* meme + brain-ladder */
+  .meme-panel { border: 2px solid var(--line); border-radius: 18px; padding: 12px; background: rgba(18,12,36,0.65); text-align: center; }
+  .meme-panel .face { font-size: 46px; display:block; margin-bottom: 4px; }
+  .meme-panel .cap { font-weight: 700; font-size: clamp(12px, 1cqw, 16px); color: #f1eeff; }
+  .brain-steps { display: grid; align-content: start; gap: 8px; }
+  .brain-row { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; padding: 8px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(18,12,36,0.6); }
+  .brain-row .face { font-size: 28px; text-align: center; }
+  .brain-row .cap { font-size: clamp(11.5px, 1cqw, 15px); }
+  .brain-row.t1 { opacity: 0.6; }
+  .brain-row.t2 { opacity: 0.78; }
+  .brain-row.t3 { border-color: #37c8ff; }
+  .brain-row.t4 { border-color: #35e0a1; box-shadow: 0 0 20px rgba(53,224,161,0.2); }
+
+  .fine-illustration { text-align: center; padding: 18px; border-radius: 18px; background: radial-gradient(circle at 50% 30%, rgba(255,120,60,0.25), transparent 70%), rgba(18,12,36,0.6); border: 1px solid rgba(255,140,80,0.35); }
+  .fine-illustration .stack-emoji { font-size: 48px; line-height: 1; }
+  .fine-illustration .say { margin-top: 8px; font-weight: 800; color: #ffcf9e; font-size: 12.5px; }
+
+  .flow-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: center; }
+  .flow-row-5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+  .flow-step { position: relative; display: grid; min-height: 96px; place-content: center; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); text-align: center; }
+  .flow-step:not(:last-child)::after { position: absolute; top: 50%; right: -18px; content: "→"; color: #37c8ff; font-size: 20px; transform: translateY(-50%); }
+  .flow-step strong { display: block; margin-bottom: 4px; color: #fff; font-size: clamp(12.5px, 1.1cqw, 17px); }
+  .flow-step span { color: var(--muted); font-size: 11px; line-height: 1.3; }
+
+  .controls { position: fixed; right: 22px; bottom: 18px; z-index: 20; display: flex; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: rgba(10,6,24,0.78); backdrop-filter: blur(14px); opacity: 0.4; transition: opacity 180ms ease; }
+  .controls:hover, .controls:focus-within { opacity: 1; }
+  .control-button { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 9px; background: transparent; color: #e3ddff; cursor: pointer; font-size: 14px; }
+  .control-button:hover { background: rgba(138,123,255,0.25); }
+  .counter { min-width: 50px; color: var(--muted); font-size: 11.5px; text-align: center; }
+  .progress { position: fixed; right: 0; bottom: 0; left: 0; z-index: 30; height: 4px; background: rgba(255,255,255,0.06); }
+  .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, #8a7bff, #37c8ff, #35e0a1); box-shadow: 0 0 12px rgba(55,200,255,0.6); transition: width 220ms ease; }
+  .notes-panel { position: fixed; right: 24px; bottom: 70px; z-index: 40; width: min(520px, calc(100vw - 48px)); max-height: 40vh; padding: 18px 20px; overflow: auto; border: 1px solid rgba(55,200,255,0.4); border-radius: 18px; background: rgba(8,5,20,0.97); box-shadow: var(--shadow); color: #e3ddff; font-size: 14.5px; line-height: 1.5; opacity: 0; visibility: hidden; transform: translateY(10px); transition: 180ms ease; }
+  .notes-panel.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+  .notes-panel strong { display: block; margin-bottom: 8px; color: #37c8ff; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .notes { display: none; }
+
+  .overview-mode { overflow: auto; }
+  .overview-mode .deck { position: static !important; top: auto !important; left: auto !important; width: auto !important; height: auto !important; transform: none !important; display: grid; grid-template-columns: repeat(3, minmax(300px, 1fr)); gap: 16px; padding: 22px; }
+  .overview-mode .slide { position: relative; inset: auto; min-height: 220px; padding: 18px; opacity: 1; visibility: visible; transform: none; border: 1px solid var(--line); border-radius: 16px; background: #150e2c; cursor: pointer; }
+  .overview-mode .slide:hover { border-color: #37c8ff; }
+  .overview-mode .slide > .content { overflow: hidden; transform: scale(0.42); transform-origin: top left; width: 235%; height: 170%; }
+  .overview-mode .slide > header h1, .overview-mode .slide > header h2 { font-size: 22px; }
+</style>
+</head>
+<body>
+<main class="deck">
+
+  <!-- 1: TITLE -->
+  <section class="slide active sec-open" data-title="Title">
+    <header><p class="eyebrow">🎤 Meetup Talk · 30 min</p></header>
+    <div class="content hero-layout">
+      <div>
+        <h1>Token Economy</h1>
+        <p class="subtitle">Spending your AI budget like an engineer, not a tourist.</p>
+        <div class="meme-panel" style="margin-top:22px; max-width:420px">
+          <img src="../../assets/opener-meme.png" alt="Meme: force employees to use AI, measure performance by token usage, why is the API bill so expensive" style="width:100%; max-height:34cqh; object-fit:contain; border-radius:12px; display:block">
+        </div>
+      </div>
+      <div class="hero-orbit" aria-hidden="true">
+        <div class="hero-core">🤖</div>
+        <div class="orbit-label one">💰</div>
+        <div class="orbit-label two">🧠</div>
+        <div class="orbit-label three">🎯</div>
+        <div class="orbit-label four">⚡</div>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Token Economy</div><span>1 / 16</span></footer>
+    <aside class="notes">Open cold. One line: "Everyone here already uses AI daily — tonight is about spending the budget better, not about what AI is."</aside>
+  </section>
+
+  <!-- 2: ABOUT + CERTS -->
+  <section class="slide sec-open" data-title="Who's talking">
+    <header><p class="eyebrow">🙋 About me</p></header>
+    <div class="content about-layout">
+      <div class="portrait-frame"><img src="../../assets/me.png" alt="Artsiom Hontar"></div>
+      <div class="stack">
+        <h1 class="name-title">Artsiom Hontar</h1>
+        <p class="bio-line"><b>8+ years</b> as a software engineer, <b>3 of them</b> spent living inside AI agent workflows day to day — the same daily grind most of you already know.</p>
+        <p class="bio-line">Right now that's <b>100M+ tokens/day</b> across coding, architecture reviews, incident ops, and story/spec writing — enough volume that "just add more context" stopped being free a long time ago.</p>
+        <div class="badge-row">
+          <div class="badge-item"><img src="../../assets/claude-prof.png" alt="Claude Certified Architect — Professional"><span>Claude Certified Architect<br>Professional</span></div>
+          <div class="badge-item"><img src="../../assets/aws-gen-ai-prof.png" alt="AWS Certified Generative AI Developer — Professional"><span>AWS Generative AI Developer<br>Professional</span></div>
+          <div class="badge-item"><img src="../../assets/aws-sa-prof.png" alt="AWS Certified Solutions Architect — Professional"><span>AWS Solutions Architect<br>Professional</span></div>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Intro</div><span>2 / 16</span></footer>
+    <aside class="notes">Keep to ~1 minute. Credibility, not biography. Badges shown are real, pulled from my own certification wallet — no outbound links, just the proof.</aside>
+  </section>
+
+  <!-- 3: VOCAB + AGENDA -->
+  <section class="slide sec-open" data-title="Vocabulary & Agenda">
+    <header><p class="eyebrow">🧩 Aligning definitions, not teaching them</p><h2>Six terms, five stops</h2></header>
+    <div class="content fill">
+      <div class="split-70-30" style="align-items:start">
+        <div class="grid-2" style="gap:10px">
+          <article class="card term-card"><span class="icon">🔌</span><h3>MCP</h3><p class="card-copy">Model Context Protocol — a server exposing tools/resources over a standard interface. Loaded whole, every turn.</p></article>
+          <article class="card term-card"><span class="icon">🎒</span><h3>Skills</h3><p class="card-copy">Packaged, on-demand instructions the agent loads only when a task matches — pointer first, body on demand.</p></article>
+          <article class="card term-card"><span class="icon">🐴</span><h3>Harness</h3><p class="card-copy">The runtime/loop (CLI, IDE ext., cloud agent) that turns a raw model into an actor with tools and memory.</p></article>
+          <article class="card term-card"><span class="icon">🪝</span><h3>Hooks</h3><p class="card-copy">Pre/post tool-call interception — filter, block, or rewrite behavior before it costs you a turn.</p></article>
+          <article class="card term-card"><span class="icon">🧩</span><h3>Context Engineering</h3><p class="card-copy">Deliberately curating what enters the context window — the discipline behind every tip tonight.</p></article>
+          <article class="card term-card"><span class="icon">💾</span><h3>Prompt Caching</h3><p class="card-copy">Reusing a stable prefix so repeated context is billed once, not re-sent every single turn.</p></article>
+        </div>
+        <div class="meme-panel" style="padding:10px">
+          <img src="../../assets/agent-harness-meme.png" alt="Meme: ChatGPT wrapper vs Agent Harness" style="max-width:100%; max-height:420px; object-fit:contain; border-radius:12px; display:block; margin:0 auto">
+        </div>
+      </div>
+      <p class="subtitle" style="margin:6px 0 0">Tonight's playbook — five stops from picking a model to deciding when not to use one.</p>
+      <div class="flow-row flow-row-5">
+        <div class="flow-step"><strong>1 · Model + harness</strong><span>Choose the pair</span></div>
+        <div class="flow-step"><strong>2 · Measure</strong><span>Effectiveness, not vibes</span></div>
+        <div class="flow-step"><strong>3 · Reduce</strong><span>Concrete token tips</span></div>
+        <div class="flow-step"><strong>4 · Observe</strong><span>See where tokens go</span></div>
+        <div class="flow-step"><strong>5 · Decide</strong><span>AI vs. you</span></div>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Vocabulary & Agenda</div><span>3 / 16</span></footer>
+    <aside class="notes">Fast slide, ~60 seconds combined. Don't over-explain vocab — audience already works with these; agenda is just a map, not a discussion.</aside>
+  </section>
+
+  <!-- 4: MODEL SELECTION (merged) -->
+  <section class="slide sec-model" data-title="Model selection">
+    <header><p class="eyebrow">01 · Model selection</p><h2>Pick the model the task needs — not a default</h2></header>
+    <div class="content split-40">
+      <div class="fill" style="justify-content:space-between">
+        <div class="card" style="display:flex; align-items:center; justify-content:center; flex:0 0 635px; padding:8px; min-height:635px">
+          <img src="../../assets/using-opus-meme.png" alt="Meme: me using Claude Opus to rename a file" style="width:100%; height:100%; object-fit:contain; border-radius:10px">
+        </div>
+        <div class="statement" style="border-color:#37c8ff; background:rgba(55,200,255,0.08); padding:10px 16px; font-size:clamp(13px,1.25cqw,18px)">My own default under tight budgets: <b>Claude Sonnet</b> (mid) or <b>GPT-5.6 Luna at high reasoning</b> — escalate only when the task actually stalls.</div>
+      </div>
+      <div class="fill" style="justify-content:space-between">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tier</th><th>Anthropic</th><th>OpenAI</th><th>Best for</th></tr></thead>
+            <tbody>
+              <tr><td>Cheap <span class="tag tag-cheap">$</span></td><td>Haiku</td><td>GPT-5.6 Luna</td><td>Mechanical edits, formatting, triage — or budget mode at high reasoning</td></tr>
+              <tr><td>Mid <span class="tag tag-mid">$$</span></td><td>Sonnet</td><td>GPT-5.6 Terra</td><td>Day-to-day implementation, well-specified features</td></tr>
+              <tr><td>Frontier <span class="tag tag-frontier">$$$</span></td><td>Opus / Fable</td><td>GPT-5.6 Sol</td><td>Genuinely ambiguous architecture, hard debugging — when budget allows</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="display:flex; align-items:center; gap:12px; padding:10px 16px">
+          <span style="font-size:clamp(20px,2cqw,28px)">🔥</span>
+          <p class="card-copy"><b>The habit trap:</b> reaching for the frontier model out of habit, for a task the cheap tier finishes in 2 seconds.</p>
+        </div>
+        <ul class="clean-list" style="--dot:#37c8ff">
+          <li>Decide by <b>task complexity</b>, never by "always pick the best available"</li>
+          <li>Stuck after repeated failed attempts → escalate one tier, don't multiply turns on the same model</li>
+          <li>Escalating one tier and succeeding first try is usually cheaper than 3 retries on the cheap tier</li>
+          <li>De-escalate too: once a frontier model produces a plan, hand the mechanical execution back to a cheap/mid model</li>
+        </ul>
+        <div class="card" style="padding:10px 16px">
+          <h3 style="margin-bottom:4px">🗓️ A real week</h3>
+          <ul class="clean-list" style="--dot:#37c8ff; gap:5px">
+            <li style="font-size:clamp(11px,1cqw,15px)"><b>Luna/Haiku:</b> renaming a field across 40 files, writing a changelog entry, triaging 20 GitHub issues</li>
+            <li style="font-size:clamp(11px,1cqw,15px)"><b>Sonnet/Terra:</b> implementing a well-specified feature end-to-end, writing tests, most PR-sized work</li>
+            <li style="font-size:clamp(11px,1cqw,15px)"><b>Opus/Fable/Sol:</b> a genuinely ambiguous migration plan, a production incident with no obvious cause</li>
+          </ul>
+        </div>
+        <div class="statement" style="border-color:#ff6fa3; background:rgba(255,111,163,0.08)">Anti-pattern to avoid: leaving the harness on <b>auto-router</b> permanently. Auto-routing helps if your habit is defaulting to a frontier model for everything — it saves you from yourself. But once you understand each model's real cost and ability, manual routing beats auto every time.</div>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Model selection</div><span>4 / 16</span></footer>
+  </section>
+
+  <!-- 5: HARNESS TAX -->
+  <section class="slide sec-model" data-title="Harness Tax">
+    <header><p class="eyebrow">01 · Model + harness</p><h2>The harness is part of the model choice</h2></header>
+    <div class="content split-40">
+      <div class="stack">
+        <div class="screenshot-img" style="background:#171717; padding:8px"><img src="../../assets/harnesstax.png" alt="HarnessTax performance-cost chart comparing Claude Code, Codex, and Pi across seven models"></div>
+        <p class="caption">HarnessTax: 21 model–harness pairs across SWE-bench Lite and Terminal-Bench 2.0. The same model can land at a very different cost depending on the runtime around it.</p>
+      </div>
+      <div class="fill">
+        <div class="card">
+          <h3>🧪 What the study measured</h3>
+          <p class="card-copy"><b>7 models × 3 harnesses</b> — Claude Code, Codex CLI, and Pi — on the same 30 tasks, three runs per task, using official benchmark evaluators.</p>
+        </div>
+        <div class="grid-3">
+          <div class="metric"><strong>~2.0×</strong><span>Claude Code cost vs. Pi on SWE-bench Lite</span></div>
+          <div class="metric"><strong>±2%</strong><span>Average harness effect on SWE-bench Lite success</span></div>
+          <div class="metric"><strong>9 / 12</strong><span>Alternative harnesses had the best observed success</span></div>
+        </div>
+        <ul class="clean-list" style="--dot:#37c8ff">
+          <li><b>Pi reaches the Pareto frontier</b> on both benchmarks with four core tools: read, write, edit, and bash</li>
+          <li><b>Claude Code's first context is over 10× Pi's</b> on average — the harness tax can start before the task begins</li>
+          <li>On Terminal-Bench 2.0, Claude Code costs about <b>1.5× Pi</b> across shared models, while success stays within roughly <b>±5%</b></li>
+        </ul>
+        <div class="statement" style="border-color:#37c8ff; background:rgba(55,200,255,0.08)">A default harness can be a hidden <b>harness tax</b>. Benchmark the <b>model × harness pair</b>, not the model alone.</div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://harnesstax.github.io/" target="_blank" rel="noopener">harnesstax.github.io</a></div><span>5 / 16</span></footer>
+    <aside class="notes">The important distinction is cost, not a universal success-rate winner. HarnessTax reports similar quality with large cost differences, and it shows that a minimal harness can be competitive. Treat these as benchmark-specific findings, not a permanent ranking.</aside>
+  </section>
+
+  <!-- 6: BENCHMARK -->
+  <section class="slide sec-bench" data-title="DeepSWE">
+    <header><p class="eyebrow">02 · Measure effectiveness, not vibes</p><h2>DeepSWE — effectiveness per closed task, not "trust me bro"</h2></header>
+    <div class="content split-60">
+      <div class="stack">
+        <div class="screenshot-img"><img src="../../assets/deepswe-bench.png" alt="DeepSWE leaderboard: score vs average cost per task"></div>
+        <p class="caption">DeepSWE leaderboard — score (%) vs. avg. cost per task, 113 tasks, 57 model/effort configs.</p>
+      </div>
+      <div class="fill">
+        <div class="card">
+          <h3>📈 What the chart actually shows</h3>
+          <p class="card-copy">Each dot is one model/reasoning-effort config, plotted by <b>score achieved</b> vs. <b>$ spent per task</b>. Reading it left-to-right past the knee shows which configs burn budget for marginal score gains.</p>
+        </div>
+        <ul class="clean-list" style="--dot:#b56bff">
+          <li><b>Contamination-free:</b> tasks written from scratch — no model has memorized the answer</li>
+          <li><b>High diversity:</b> 91 repositories across 5 languages, so a win generalizes past one codebase style</li>
+          <li><b>Reliable verification:</b> hand-written behavioral verifiers, not implementation-detail diffing</li>
+        </ul>
+        <div class="card">
+          <h3>🔍 Read the whole board, not just the top row</h3>
+          <ul class="clean-list" style="--dot:#37c8ff">
+            <li><b>Gemini Flash</b> often lands strong completeness at a low price — but takes the most iterations and the longest wall-clock time to get there</li>
+            <li><b>Reasoning effort moves the needle more than the model name:</b> GPT-5.6 Luna goes from ~2% task completion at low effort to ~80% at high effort on the same weights</li>
+          </ul>
+        </div>
+        <div class="statement" style="border-color:#b56bff; background:rgba(181,107,255,0.08)">Check benchmarks like this one regularly — the fit between model and task type shifts every release.</div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://deepswe.datacurve.ai/" target="_blank" rel="noopener">deepswe.datacurve.ai</a></div><span>6 / 16</span></footer>
+    <aside class="notes">Rankings shift fast — pull the live leaderboard before the talk instead of trusting this screenshot.</aside>
+  </section>
+
+  <!-- 6: CLI vs MCP -->
+  <section class="slide sec-tips" data-title="CLI vs MCP">
+    <header><p class="eyebrow">03 · Token-reduction playbook</p><h2>CLI beats MCP — almost always</h2></header>
+    <div class="content fill" style="justify-content:flex-start; gap:20px">
+      <article class="card meme-row" style="align-items:center">
+        <img src="../../assets/mcp-vs-cli.png" alt="AI agent integration: MCP (Model Context Protocol) vs Command-Line Interface (CLI)" style="max-width:220px; background:#fff; padding:6px">
+        <p class="card-copy">Same job, two integration shapes: an <b>MCP server</b> exposes every tool schema up front and pays for it every turn, a <b>CLI</b> is read once and then just called — the benchmark below is what that difference costs in practice.</p>
+      </article>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Interface</th><th>Input tokens</th><th>Cost/task</th><th>Turns</th><th>Success</th></tr></thead>
+          <tbody>
+            <tr class="win"><td>🏆 gh-axi (agent-tuned CLI)</td><td>46,462</td><td>$0.050</td><td>3</td><td>100%</td></tr>
+            <tr><td>gh CLI (raw)</td><td>47,076</td><td>$0.054</td><td>3</td><td>86%</td></tr>
+            <tr><td>GitHub MCP (code exec)</td><td>137,409</td><td>$0.101</td><td>7</td><td>84%</td></tr>
+            <tr><td>GitHub MCP + ToolSearch</td><td>153,621</td><td>$0.147</td><td>8</td><td>82%</td></tr>
+            <tr><td>GitHub MCP (eager schemas)</td><td>175,757</td><td>$0.148</td><td>6</td><td>87%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid-3">
+        <div class="card"><span class="icon">📐</span><h3>Why it wins</h3><p class="card-copy">17 real GitHub tasks × 5 repeats, same model, LLM-judged success. CLI wins tokens, cost, <i>and</i> success rate.</p></div>
+        <div class="card"><span class="icon">⚙️</span><h3>The mechanism</h3><p class="card-copy">MCP schemas are loaded into context on <i>every</i> turn, whether the turn uses them or not. A CLI's help text is read once, then the agent just calls it.</p></div>
+        <div class="card"><span class="icon">🧪</span><h3>Early but usable</h3><p class="card-copy">"axi" (Agent eXperience Interface) CLIs like <code>gh-axi</code> and <code>chrome-devtools-axi</code> wrap existing CLIs with agent-tuned output — still early, but already usable in production harnesses.</p></div>
+      </div>
+      <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08)">3× the tokens, 2× the turns, and a <b>16-point lower</b> success rate — the "convenience" of always-on MCP tools is not free.</div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/kunchenguid/gh-axi" target="_blank" rel="noopener">github.com/kunchenguid/gh-axi</a><a class="link-chip" href="https://www.scalekit.com/blog/mcp-vs-cli-use" target="_blank" rel="noopener">scalekit.com/blog/mcp-vs-cli-use</a></div><span>7 / 16</span></footer>
+  </section>
+
+  <!-- 7: ESCALATION + SKILL-FIRST -->
+  <section class="slide sec-tips" data-title="Skills over MCP">
+    <header><p class="eyebrow">03 · Token-reduction playbook</p><h2>Skill-first beats always-on MCP and prompt bloat</h2></header>
+    <div class="content split-40">
+      <div class="fill">
+        <div style="display:flex; gap:14px; align-items:stretch; height:600px">
+          <div class="screenshot-img" style="background:#f4f4f5; aspect-ratio:9/16; height:100%; width:auto; flex:0 0 auto">
+            <img src="../../assets/brains-meme.png" alt="Escalating-brain meme: small brain loads every MCP tool schema every turn, glowing brain prefers a plain CLI, bigger brain packages a Skill loaded on demand, galaxy brain delegates isolated exploration to a subagent" style="height:100%; width:100%; object-fit:contain">
+          </div>
+          <div class="card" style="flex:1; display:flex; flex-direction:column; justify-content:center">
+            <h3>🎒 Popular skill use cases</h3>
+            <ul class="clean-list" style="--dot:#35e0a1">
+              <li>Parsing/generating a file format (PDF, XLSX, DOCX) — loaded only when that file type shows up</li>
+              <li>House code-review standards or commit conventions — one Skill, reused across every repo</li>
+              <li>An ops runbook (incident triage, release checklist) — procedural steps, not re-read prose</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="fill">
+        <div class="grid-3">
+          <div class="card"><span class="icon">🔌</span><h3>MCP</h3><p class="card-copy">Always-loaded schemas. Cost paid every turn, used or not.</p></div>
+          <div class="card"><span class="icon">📜</span><h3>Long prompt</h3><p class="card-copy">Static instructions baked in, relevant or not.</p></div>
+          <div class="card" style="border-color:#35e0a1"><span class="icon">🎒</span><h3>Skills</h3><p class="card-copy">Loaded only on match — pointer first, full text on demand.</p></div>
+        </div>
+        <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08)">Skill-first: ship the repetitive/complex knowledge (a runbook, a house style, a tool's rules) as a Skill before reaching for an always-on MCP server or prompt bloat.</div>
+        <div class="card meme-row">
+          <img src="../../assets/matt-skills.png" alt="mattpocock/skills GitHub repo — 170K stars, 9.2M downloads, no slop allowed">
+          <p class="card-copy">One of the most popular open Skill packs right now: <b>170K★, 9.2M downloads</b>. <b>grill-me</b> cross-examines your plan/PR before you ship it; <b>improve-codebase-architecture</b> audits a repo for deep-module violations and proposes a concrete refactor.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/mattpocock/skills" target="_blank" rel="noopener">github.com/mattpocock/skills</a></div><span>8 / 16</span></footer>
+  </section>
+
+  <!-- 8: CONTEXT ENGINEERING (subagents + 1M caution) -->
+  <section class="slide sec-tips" data-title="Context engineering">
+    <header><p class="eyebrow">03 · Token-reduction playbook</p><h2>Context engineering: isolate, then cap</h2></header>
+    <div class="content grid-3">
+      <div class="card fill">
+        <h3>🧑‍🚀 Subagents isolate context</h3>
+        <div class="screenshot-img" style="background:#fff; height:200px"><img src="../../assets/subagents.png" alt="Main agent delegating work to subagents, each with its own context window"></div>
+        <p class="card-copy">Each subagent gets its <b>own context window</b> — 50 files read, 30 commands run, two failed attempts — none of that noise reaches the parent. Only the final result crosses back.</p>
+      </div>
+      <div class="card fill">
+        <h3>🔍 ToolSearch trims the MCP tax</h3>
+        <div class="screenshot-img" style="background:#fff; height:200px"><img src="../../assets/tool-search.png" alt="ToolSearch: the agent searches a tool index on demand instead of loading every MCP tool schema up front"></div>
+        <p class="card-copy">Instead of loading every MCP schema up front, the agent <b>searches a tool index</b> and pulls in only the schema it needs. Cuts the eager-load tax (175,757 → 153,621 tokens/task, slide 6) — better than nothing, still short of a CLI's 46,462.</p>
+      </div>
+      <div class="card fill">
+        <h3>🔥 1M context ≠ better context</h3>
+        <div class="screenshot-img" style="height:200px"><img src="../../assets/1m-context-bench.png" alt="MRCR v2 long-context retrieval benchmark: match ratio drops sharply as input tokens grow"></div>
+        <ul class="clean-list" style="--dot:#ffb545">
+          <li>MRCR v2: even <b>Opus 4.6</b> drops 91.9%→78.3% from 256K to 1M — every model degrades, none holds flat</li>
+          <li>Weaker models fall off a cliff: GPT-5.4 79.3%→36.6% (128K→1M)</li>
+          <li>Keep working context at <b>250–400K tokens</b> — retrieval accuracy is the real ceiling</li>
+        </ul>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Reduction tips</div><span>9 / 16</span></footer>
+    <aside class="notes">MRCR = "multi-round co-reference resolution", an 8-needle-in-haystack retrieval test. Gemini/GPT numbers measured independently by Context Arena, not vendor self-reports.</aside>
+  </section>
+
+  <!-- 9: SHELL-LAYER (coreutils + ripgrep + RTK) -->
+  <section class="slide sec-tips" data-title="Shell-layer compression">
+    <header><p class="eyebrow">03 · Token-reduction playbook</p><h2>Compress before it reaches the agent</h2></header>
+    <div class="content">
+      <div class="grid-2">
+        <article class="card"><span class="icon">🧰</span><h3>Coreutils for Windows</h3><p class="card-copy">Missing <code>grep</code>/<code>ls</code>/<code>find</code> costs extra failed calls before PowerShell fallback.<br><code>winget install Microsoft.Coreutils</code></p></article>
+        <article class="card"><span class="icon">⚡</span><h3>ripgrep</h3><p class="card-copy">Fast, agent-friendly search output.<br><code>winget install BurntSushi.ripgrep</code></p></article>
+      </div>
+      <div class="split-60">
+        <div class="card"><span class="icon">🔧</span><h3>RTK — Rust Token Killer</h3><p class="card-copy">A local CLI proxy that rewrites verbose shell output (git, test runners, package managers, k8s) into a lean equivalent before the agent ever sees it. Runs transparently in front of your normal shell — no change to how you invoke commands, only to what reaches the model's context.</p><code>rtk gain</code> shows savings history<ul class="clean-list" style="--dot:#35e0a1; margin-top:10px"><li><b>6,971 commands</b> proxied, <b>10.0M tokens saved (57.6%)</b> against 17.3M input / 7.3M output tokens</li><li>Biggest wins on noisy commands: <code>rtk lint eslint</code> 99.9% saved, <code>rtk diff</code> 99.8%, <code>rtk dotnet test</code> 74–82%</li><li>Savings compound: fewer input tokens per turn also means more turns fit before a context reset is needed</li></ul></div>
+        <div class="screenshot-img"><img src="../../assets/rtk-gain.png" alt="rtk gain output: 10.0M tokens saved, 57.6% efficiency, breakdown by command"></div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/microsoft/coreutils" target="_blank" rel="noopener">github.com/microsoft/coreutils</a><a class="link-chip" href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener">github.com/BurntSushi/ripgrep</a><a class="link-chip" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">github.com/rtk-ai/rtk</a></div><span>10 / 16</span></footer>
+  </section>
+
+  <!-- 10: HEADROOM -->
+  <section class="slide sec-tips" data-title="Headroom">
+    <header><p class="eyebrow">03 · Token-reduction playbook</p><h2>Headroom — compress on the wire</h2></header>
+    <div class="content split-40">
+      <div class="fill">
+        <div class="screenshot-img" style="background:#0a0f0d; max-height:56%"><img src="../../assets/headroom.png" alt="Headroom compressing 55,957 tokens down to 24,340 — 57% fewer input tokens, critical line preserved byte for byte"></div>
+        <div class="bar-row"><span class="bar-label">Code search (100 results)</span><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="bar-value">21%</span></div>
+        <div class="bar-row"><span class="bar-label">SRE incident debugging</span><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="bar-value">57%</span></div>
+        <div class="bar-row"><span class="bar-label">Codebase exploration</span><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div><span class="bar-value">42%</span></div>
+        <div class="bar-row"><span class="bar-label">GitHub issue triage</span><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="bar-value">30%</span></div>
+      </div>
+      <div class="fill">
+        <div class="card">
+          <span class="icon">⚙️</span>
+          <h3>How it works — four compression passes</h3>
+          <ul class="clean-list" style="--dot:#35e0a1">
+            <li><b>Structural dedup:</b> repeated JSON/YAML keys, boilerplate stack-frame lines, and near-identical log rows collapse to one representative + a count</li>
+            <li><b>Re-encoding:</b> deeply nested JSON gets rewritten as a flatter, less punctuation-heavy format (see JSON→TOON below) — same data, far fewer tokens per field</li>
+            <li><b>Salience-aware truncation:</b> the FATAL/ERROR line and its neighbors survive byte-for-byte; surrounding noise gets summarized or dropped</li>
+            <li><b>Semantic chunking</b> for RAG: retrieved passages are trimmed to the sentences that actually match the query, not the whole source document</li>
+          </ul>
+        </div>
+        <div class="grid-2">
+          <div class="screenshot-img" style="background:#e8f6ff"><img src="../../assets/json-vs-toon.png" alt="JSON vs TOON encoding example"></div>
+          <div class="card"><span class="icon">📦</span><h3>package.json example</h3><p class="card-copy">A generated lockfile or huge <code>package.json</code> re-encoded from JSON to TOON-style rows removes repeated <code>"key":</code> punctuation per entry — the exact same dependency data, a fraction of the tokens.</p></div>
+        </div>
+        <p class="card-copy">Accuracy held flat on GSM8K/TruthfulQA/SQuAD/BFCL in Headroom's own evals — compression, not summarization; nothing is guessed.</p>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/headroomlabs-ai/headroom" target="_blank" rel="noopener">github.com/headroomlabs-ai/headroom</a></div><span>11 / 16</span></footer>
+  </section>
+
+  <!-- 11: PROMPT / READ-TOKEN CACHING -->
+  <section class="slide sec-tips" data-title="Prompt caching economics">
+    <header><p class="eyebrow">03 · Token-reduction playbook</p><h2>Don't let the cache write itself twice</h2></header>
+    <div class="content split-30-70">
+      <div class="stack" style="justify-content:flex-start; gap:14px">
+        <div class="screenshot-img" style="background:#161310; padding:4px; max-height:220px"><img src="../../assets/prompt-cache.png" alt="Diagram: each turn resends the full context; the unchanged prefix reads from cache until the system prompt changes and the cache is rebuilt from scratch"></div>
+        <p class="card-copy">Cache hits are billed far cheaper than fresh input tokens — but the cache is fragile. Two habits quietly destroy it:</p>
+        <ul class="clean-list" style="--dot:#35e0a1">
+          <li><b>Switching providers mid-session</b> — the cache is provider- and often model-specific; hopping between Claude/GPT/Gemini rewrites it from zero every time</li>
+          <li><b>Letting a task straddle the TTL window</b> — come back after a break and you pay full write price to rebuild the same prefix</li>
+        </ul>
+        <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08)">Rule of thumb: a cache read runs ~10× cheaper than a fresh input token. The 1.25–2× write premium pays for itself after just one reuse.</div>
+        <div class="stat-row">
+          <div class="stat-chip"><b>1×</b><span>Uncached fresh input token</span></div>
+          <div class="stat-chip"><b>1.25–2×</b><span>Cache write premium (paid once)</span></div>
+          <div class="stat-chip"><b>0.10×</b><span>Cache read cost (paid on every reuse)</span></div>
+        </div>
+      </div>
+      <div class="fill">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Provider</th><th>Default TTL</th><th>Extended TTL</th><th>Cache write</th><th>Cache read</th></tr></thead>
+            <tbody>
+              <tr><td>Anthropic Claude</td><td>5 min</td><td>1 hr (paid)</td><td>1.25× (5 min) / 2.0× (1 hr)</td><td>0.10× — 90% off</td></tr>
+              <tr><td>OpenAI</td><td>~5–10 min</td><td>≤ 1 hr</td><td>no premium — automatic</td><td>0.10× — 90% off</td></tr>
+              <tr><td>Gemini</td><td>~10 min (proxy-level)</td><td>—</td><td>varies by proxy</td><td>discounted, provider-set</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>💰 Worked example — Claude Sonnet 4.6, $3/M standard input</h3>
+          <p class="card-copy">A 50K-token system prompt/repo-context reused <b>20 times</b> in one session, 5-min TTL:</p>
+          <ul class="clean-list" style="--dot:#37c8ff">
+            <li><b>No caching:</b> 20 × 50K × $3/M = <b>$3.00</b></li>
+            <li><b>With caching:</b> 1 write (50K × $3.75/M) + 19 reads (50K × $0.30/M) = $0.19 + $0.29 = <b>$0.48</b> — an <b>84% reduction</b></li>
+            <li>Same 50K tokens spread across <b>2 providers</b> instead of 1 → two full-price writes, most of that saving disappears</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Reduction tips</div><span>12 / 16</span></footer>
+  </section>
+
+  <!-- 12: OBSERVABILITY (self) -->
+  <section class="slide sec-obs" data-title="Observability">
+    <header><p class="eyebrow">04 · Observability</p><h2>Don't monitor tokens — notice when the agent drifts</h2></header>
+    <div class="content split-60">
+      <div class="fill">
+        <div class="card">
+          <h3>🧠 Context pressure</h3>
+          <p class="card-copy">Watch context % and cache-hit ratio. When it climbs, <code>/compact</code>, checkpoint, or start a new task — a bigger window ≠ a healthier session.</p>
+        </div>
+        <div class="card">
+          <h3>🔥 Burn rate</h3>
+          <p class="card-copy">Watch tokens/cost per minute. A spike means stop watching it "think harder" and inspect what actually changed — exploration and tool loops compound fast.</p>
+        </div>
+        <div class="card">
+          <h3>🔁 Retry loops</h3>
+          <p class="card-copy">Same tool called repeatedly, same file reread, same command failing — that's a signal to intervene manually. Three failed attempts need a new strategy, not a fourth prompt.</p>
+        </div>
+        <div class="statement" style="border-color:#37c8ff; background:rgba(55,200,255,0.08); font-size:clamp(13px,1.15cqw,19px)">The goal isn't fewer tokens. It's noticing diminishing returns early enough to change course — treat context/burn rate like CPU temperature, not a monthly invoice.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px; height:100%">
+        <div class="screenshot-img" style="background:#1a1a23; flex:1; min-height:0"><img src="../../assets/cc-usage.png" alt="Claude Code /usage panel: session cost $63.73, per-model input/output/cache breakdown, current session and weekly limit usage bars"></div>
+        <div class="card" style="flex:none">
+          <h3>📟 Ambient telemetry beats a monthly report</h3>
+          <p class="card-copy">Claude Code's <code>/usage</code> and a custom statusline put model, context %, cache ratio, and session cost <b>in front of you while you work</b> — no dashboard to open. Community statuslines add burn-rate and RTK savings too.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://www.aihero.dev/creating-the-perfect-claude-code-status-line" target="_blank" rel="noopener">aihero.dev/creating-the-perfect-claude-code-status-line</a></div><span>13 / 16</span></footer>
+    <aside class="notes">This is self-regulation framing, not manager surveillance — the developer watches their own agent, the same way you'd glance at CPU temp, not exact cycles. Screenshot is a real Claude Code /usage export from a Max session.</aside>
+  </section>
+
+  <!-- 13: OBSERVABILITY (attribution) -->
+  <section class="slide sec-obs" data-title="Attribution tooling">
+    <header><p class="eyebrow">04 · Observability</p><h2>From session cost to per-PR attribution</h2></header>
+    <div class="content split-40">
+      <div class="screenshot-img" style="background:#0d1420; padding:0"><img src="../../assets/cc-ledger.png" alt="cc-ledger widget: 5-hour session pace, activity breakdown by category (coding, feature, debugging, exploration, delegation), recent PRs with AI-line counts and cost, session-spend percentiles, 11 runaway sessions flagged above p95"></div>
+      <div class="fill">
+        <div class="card">
+          <h3>🧾 cc-ledger — a concrete demo, not a product</h3>
+          <p class="card-copy">Hooks record every prompt/edit locally to SQLite, then roll it up per PR: cost, AI-line count, category split (coding vs. exploration vs. retries), and runaway-session detection (p50/p95/p99 spend). Young project, few stars — treat it as <b>proof the idea works</b>, not an established tool.</p>
+        </div>
+        <div class="card">
+          <h3>🔭 Build your own, or don't start from zero</h3>
+          <p class="card-copy">Claude Code and other harnesses already export <code>tokens</code>, <code>cost</code>, <code>commit.count</code>, and <code>pull_request.count</code> via OpenTelemetry — enough to pipe into Langfuse, Grafana, or your own collector and tag by <code>git branch</code>/<code>PR#</code> yourself.</p>
+        </div>
+        <div class="card">
+          <h3>🔎 agentsview — smarter cross-agent analysis</h3>
+          <p class="card-copy">One local ledger across Claude Code, Codex, and other coding agents: daily/per-model token & cost breakdown, peak context, session history — a good starting point if you'd rather adopt than build.</p>
+        </div>
+        <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08)">Sessions tell you what the agent did. Git branch/PR metadata tells you why it was worth it — that correlation is still an open, unsettled part of this tooling space.</div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://github.com/delta-hq/cc-ledger" target="_blank" rel="noopener">github.com/delta-hq/cc-ledger</a><a class="link-chip" href="https://github.com/kenn-io/agentsview" target="_blank" rel="noopener">github.com/kenn-io/agentsview</a></div><span>14 / 16</span></footer>
+    <aside class="notes">Be honest about maturity here: cc-ledger is a good demonstration of PR-level attribution, not a production-ready dependency to bet a team on. The broader point is that the telemetry primitives (OTel token/cost/commit/PR counters) already exist in the harnesses themselves — attribution tooling on top is still early and worth watching, or building yourself.</aside>
+  </section>
+
+  <!-- 14: DECISION -->
+  <section class="slide sec-decide" data-title="Decision triage">
+    <header><p class="eyebrow">05 · AI vs. doing it yourself</p><h2>Not a competition — a token budget allocation problem</h2></header>
+    <div class="content split-60">
+      <div class="fill">
+        <div class="card">
+          <h3>Who owns which decision</h3>
+          <div style="display:flex;gap:18px;font-size:12px;color:var(--muted);margin:2px 0 12px">
+            <span>🧑‍💻 Human — what &amp; why</span><span>🤖 AI — how</span>
+          </div>
+          <div class="bar-row" style="grid-template-columns:148px 1fr 64px">
+            <span class="bar-label">Problem framing</span>
+            <div class="bar-track" style="display:flex"><div style="width:85%;background:#ff6fa3;height:100%"></div><div style="width:15%;background:#35e0a1;height:100%"></div></div>
+            <span class="bar-value">85 / 15</span>
+          </div>
+          <div class="bar-row" style="grid-template-columns:148px 1fr 64px">
+            <span class="bar-label">Architecture</span>
+            <div class="bar-track" style="display:flex"><div style="width:70%;background:#ff6fa3;height:100%"></div><div style="width:30%;background:#35e0a1;height:100%"></div></div>
+            <span class="bar-value">70 / 30</span>
+          </div>
+          <div class="bar-row" style="grid-template-columns:148px 1fr 64px">
+            <span class="bar-label">Implementation</span>
+            <div class="bar-track" style="display:flex"><div style="width:25%;background:#ff6fa3;height:100%"></div><div style="width:75%;background:#35e0a1;height:100%"></div></div>
+            <span class="bar-value">25 / 75</span>
+          </div>
+          <div class="bar-row" style="grid-template-columns:148px 1fr 64px">
+            <span class="bar-label">Repetitive work</span>
+            <div class="bar-track" style="display:flex"><div style="width:10%;background:#ff6fa3;height:100%"></div><div style="width:90%;background:#35e0a1;height:100%"></div></div>
+            <span class="bar-value">10 / 90</span>
+          </div>
+          <div class="bar-row" style="grid-template-columns:148px 1fr 64px">
+            <span class="bar-label">Final review</span>
+            <div class="bar-track" style="display:flex"><div style="width:80%;background:#ff6fa3;height:100%"></div><div style="width:20%;background:#35e0a1;height:100%"></div></div>
+            <span class="bar-value">80 / 20</span>
+          </div>
+          <p class="card-copy" style="margin-top:10px; font-size:12px">Illustrative splits, not measured percentages — the real ratio depends on the task and your own domain expertise.</p>
+        </div>
+        <div class="statement" style="border-color:#8a7bff; background:rgba(138,123,255,0.08); flex:1; display:flex; align-items:center; font-size:19px"><span>No DORA-style industry standard exists for this split yet. Anthropic's review of ~400K Claude Code sessions found a stable pattern instead: humans decide <b>what to do</b>, agents decide <b>how</b> — and success tracks domain expertise, not how "autonomously" the agent is left running.</span></div>
+      </div>
+      <div class="fill">
+        <div class="stat-row" style="flex-direction:column">
+          <div class="stat-chip"><b>~$52/mo</b><span>Median developer AI-coding spend — ~51M tokens/month</span></div>
+          <div class="stat-chip"><b>~$691/mo</b><span>90th percentile — ~380M tokens/month, driven by agentic loops</span></div>
+          <div class="stat-chip"><b>8–15×</b><span>Cost multiplier when an autonomous agent loop goes unsupervised per task</span></div>
+        </div>
+        <div class="card" style="flex:1; justify-content:center"><span class="icon">💸</span><h3>Spend is right-skewed, not fixed</h3><p class="card-copy">Most of the gap between median and heavy spenders isn't "more work done" — it's unsupervised agent loops multiplying context overhead. A bigger token budget doesn't fix a bad task-routing decision; it just delays noticing it.</p></div>
+        <div class="statement" style="border-color:#35e0a1; background:rgba(53,224,161,0.08); display:flex; align-items:center">Don't ask "Can AI do this?" Ask "Is this the best use of my remaining budget?"</div>
+      </div>
+    </div>
+    <footer class="footer"><div class="links"><a class="link-chip" href="https://jellyfish.co/blog/is-tokenmaxxing-cost-effective-new-data-from-jellyfish-explains/" target="_blank" rel="noopener">jellyfish.co — token usage data</a></div><span>15 / 16</span></footer>
+  </section>
+
+  <!-- 15: THANKS -->
+  <section class="slide sec-open" data-title="Thanks">
+    <header><p class="eyebrow">🙏 Thanks</p><h2>What we covered — and where to go read more</h2></header>
+    <div class="content fill" style="justify-content:flex-start; gap:22px">
+      <div class="recap-grid">
+        <div class="recap-chip"><b>01 · Model selection</b>Route by task, not habit — cheap/mid/frontier, escalate one tier at a time.</div>
+        <div class="recap-chip"><b>01 · Harness choice</b>The same model can cost 2× more in a different runtime; benchmark the pair.</div>
+        <div class="recap-chip"><b>02 · Measure effectiveness</b>Score ÷ cost per closed task beats "trust me bro" benchmarks.</div>
+        <div class="recap-chip"><b>03 · CLI &gt; MCP</b>Always-loaded schemas cost tokens every turn, even unused.</div>
+        <div class="recap-chip"><b>03 · Skill-first</b>Package repeated knowledge as a Skill before an always-on MCP server.</div>
+        <div class="recap-chip"><b>03 · Context engineering</b>Subagents isolate noise; cap working context at 250–400K regardless of window size.</div>
+        <div class="recap-chip"><b>03 · Shell &amp; wire compression</b>Coreutils, ripgrep, RTK, Headroom — compress before it ever reaches the model.</div>
+        <div class="recap-chip"><b>03 · Prompt caching</b>One provider per session, batch turns inside the TTL window.</div>
+        <div class="recap-chip"><b>04 · Observability</b>Watch context/burn-rate/retries yourself; PR-cost attribution tooling is still early.</div>
+        <div class="recap-chip"><b>05 · AI vs. you</b>Delegate the mechanical; drive the novel and high-blast-radius yourself.</div>
+      </div>
+      <div class="table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Tool / source</th><th>What it's for</th><th>Link</th></tr></thead>
+          <tbody>
+            <tr><td>gh-axi</td><td>Agent-tuned CLI wrapper, CLI-vs-MCP benchmark</td><td><a href="https://github.com/kunchenguid/gh-axi" target="_blank" rel="noopener">github.com/kunchenguid/gh-axi</a></td></tr>
+            <tr><td>Microsoft coreutils</td><td>Native grep/ls/find for Windows agents</td><td><a href="https://github.com/microsoft/coreutils" target="_blank" rel="noopener">github.com/microsoft/coreutils</a></td></tr>
+            <tr><td>ripgrep</td><td>Fast, agent-friendly search output</td><td><a href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener">github.com/BurntSushi/ripgrep</a></td></tr>
+            <tr><td>RTK</td><td>Shell-output compression proxy, savings history</td><td><a href="https://github.com/rtk-ai/rtk" target="_blank" rel="noopener">github.com/rtk-ai/rtk</a></td></tr>
+            <tr><td>Headroom</td><td>Wire-layer compression for tool output, logs, files, RAG</td><td><a href="https://github.com/headroomlabs-ai/headroom" target="_blank" rel="noopener">github.com/headroomlabs-ai/headroom</a></td></tr>
+            <tr><td>Token Economy article</td><td>Research-style write-up of the deck</td><td><a href="../../blog/token-economy.html" target="_blank" rel="noopener">Read the article</a></td></tr>
+            <tr><td>HarnessTax</td><td>Model × harness cost and success benchmark</td><td><a href="https://harnesstax.github.io/" target="_blank" rel="noopener">harnesstax.github.io</a></td></tr>
+            <tr><td>DeepSWE</td><td>Contamination-free, cost-aware SWE benchmark</td><td><a href="https://deepswe.datacurve.ai/" target="_blank" rel="noopener">deepswe.datacurve.ai</a></td></tr>
+            <tr><td>Langfuse / Helicone</td><td>Per-session/user LLM cost &amp; trace observability</td><td><a href="https://langfuse.com" target="_blank" rel="noopener">langfuse.com</a> · <a href="https://helicone.ai" target="_blank" rel="noopener">helicone.ai</a></td></tr>
+            <tr><td>Claude Code statusline</td><td>Ambient context %, cache ratio, cost — while you work</td><td><a href="https://www.aihero.dev/creating-the-perfect-claude-code-status-line" target="_blank" rel="noopener">aihero.dev</a></td></tr>
+            <tr><td>cc-ledger</td><td>Demo: local per-PR cost/attribution from hooks</td><td><a href="https://github.com/delta-hq/cc-ledger" target="_blank" rel="noopener">github.com/delta-hq/cc-ledger</a></td></tr>
+            <tr><td>agentsview</td><td>Cross-agent local usage ledger (Claude Code, Codex, ...)</td><td><a href="https://github.com/kenn-io/agentsview" target="_blank" rel="noopener">github.com/kenn-io/agentsview</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <footer class="footer"><div class="brand"><span class="brand-mark">T$</span> Fin</div><span>16 / 16</span></footer>
+  </section>
+
+</main>
+
+<div class="controls" aria-label="Presentation controls">
+  <button class="control-button" id="previous" title="Previous slide (Left arrow)" aria-label="Previous slide">←</button>
+  <span class="counter" id="counter">1 / 16</span>
+  <button class="control-button" id="next" title="Next slide (Right arrow)" aria-label="Next slide">→</button>
+  <button class="control-button" id="notes" title="Toggle notes (N)" aria-label="Toggle presenter notes">N</button>
+  <button class="control-button" id="overview" title="Overview (O)" aria-label="Toggle slide overview">▦</button>
+  <button class="control-button" id="fullscreen" title="Fullscreen (F)" aria-label="Toggle fullscreen">⛶</button>
+</div>
+<div class="notes-panel" id="notes-panel" role="status"></div>
+<div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+
+<script>
+(() => {
+  const deck = document.querySelector(".deck");
+  const DESIGN_W = 1760, DESIGN_H = 990;
+  const fitDeck = () => {
+    if (document.body.classList.contains("overview-mode")) return;
+    const scale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
+    deck.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  };
+  fitDeck();
+  window.addEventListener("resize", fitDeck);
+
+  const slides = [...document.querySelectorAll(".slide")];
+  const counter = document.getElementById("counter");
+  const progress = document.getElementById("progress-bar");
+  const notesPanel = document.getElementById("notes-panel");
+  let current = 0;
+  let notesVisible = false;
+  let overviewVisible = false;
+
+  const getHashIndex = () => {
+    const match = window.location.hash.match(/^#slide-(\d+)$/);
+    if (!match) return 0;
+    return Math.min(slides.length - 1, Math.max(0, Number(match[1]) - 1));
+  };
+
+  const updateNotes = () => {
+    const notes = slides[current].querySelector(".notes");
+    notesPanel.innerHTML = `<strong>Presenter notes</strong>${notes ? notes.innerHTML : "(none for this slide)"}`;
+    notesPanel.classList.toggle("visible", notesVisible && !overviewVisible);
+  };
+
+  const show = (index, updateHash = true) => {
+    current = Math.min(slides.length - 1, Math.max(0, index));
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("active", i === current);
+      slide.classList.toggle("previous", i < current);
+    });
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+    document.title = `${slides[current].dataset.title} · Token Economy`;
+    updateNotes();
+    if (updateHash) history.replaceState(null, "", `#slide-${current + 1}`);
+  };
+
+  const toggleNotes = () => { notesVisible = !notesVisible; updateNotes(); };
+  const toggleOverview = () => {
+    overviewVisible = !overviewVisible;
+    document.body.classList.toggle("overview-mode", overviewVisible);
+    if (!overviewVisible) { show(current); fitDeck(); }
+  };
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  };
+
+  document.getElementById("previous").addEventListener("click", () => show(current - 1));
+  document.getElementById("next").addEventListener("click", () => show(current + 1));
+  document.getElementById("notes").addEventListener("click", toggleNotes);
+  document.getElementById("overview").addEventListener("click", toggleOverview);
+  document.getElementById("fullscreen").addEventListener("click", toggleFullscreen);
+
+  slides.forEach((slide, index) => {
+    slide.addEventListener("click", (event) => {
+      if (!overviewVisible || event.target.closest("a")) return;
+      current = index;
+      toggleOverview();
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("a, button")) return;
+    if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") { event.preventDefault(); if (!overviewVisible) show(current + 1); }
+    else if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); if (!overviewVisible) show(current - 1); }
+    else if (event.key === "Home") { event.preventDefault(); if (!overviewVisible) show(0); }
+    else if (event.key === "End") { event.preventDefault(); if (!overviewVisible) show(slides.length - 1); }
+    else if (event.key.toLowerCase() === "n") toggleNotes();
+    else if (event.key.toLowerCase() === "o") toggleOverview();
+    else if (event.key.toLowerCase() === "f") toggleFullscreen();
+    else if (event.key === "Escape" && notesVisible) { notesVisible = false; updateNotes(); }
+  });
+
+  window.addEventListener("hashchange", () => show(getHashIndex(), false));
+  show(getHashIndex(), false);
+})();
+</script>
+</body>
+</html>

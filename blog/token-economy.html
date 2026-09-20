@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A practical framework for measuring verified engineering output per dollar in coding-agent workflows.">
+<meta name="theme-color" content="#101214">
+<meta property="og:title" content="Token Economy: How to Spend an AI Coding Budget Like an Engineer">
+<meta property="og:description" content="A practical framework for measuring verified engineering output per dollar in coding-agent workflows.">
+<meta property="og:image" content="https://artemgontar.github.io/assets/harnesstax.png">
+<meta property="og:type" content="article">
+<title>Token Economy: How to Spend an AI Coding Budget Like an Engineer</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --page: #101214;
+    --surface: #171a1d;
+    --ink: #f2f3f4;
+    --ink2: #c2c8ce;
+    --muted: #8c959e;
+    --border: rgba(255,255,255,0.14);
+    --accent: #8dbbff;
+    --accent-soft: #1d2a3a;
+    --good: #62d5a0;
+    --shadow: 0 18px 50px rgba(0,0,0,0.28);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--page); }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 8% 0%, rgba(73,117,180,0.20), transparent 32rem),
+      var(--page);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    line-height: 1.65;
+  }
+  a { color: var(--accent); }
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 28px 18px;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+  .masthead a {
+    color: #ffffff;
+    font-weight: 800;
+    text-decoration: none;
+  }
+  .article-shell {
+    max-width: 1080px;
+    margin: 24px auto 72px;
+    padding: 0 28px;
+  }
+  .article {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 64px) 0;
+  }
+  .article h1 {
+    max-width: 760px;
+    margin: 0 0 12px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(38px, 6vw, 68px);
+    line-height: 1.04;
+    letter-spacing: -0.045em;
+  }
+  .article h2 {
+    margin: 52px 0 14px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(26px, 3.4vw, 38px);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+  .article h3 {
+    margin: 30px 0 10px;
+    font-size: 19px;
+    line-height: 1.25;
+  }
+  .article > p:first-of-type {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .article p { margin: 0 0 18px; }
+  .article strong { color: #ffffff; }
+  .article code {
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: #252a2f;
+    color: #e5e9ed;
+    font: 0.92em ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  .article pre {
+    margin: 22px 0;
+    padding: 18px 20px;
+    overflow-x: auto;
+    border-radius: 12px;
+    background: #090a0b;
+    color: #f6f7f8;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.24);
+  }
+  .article pre code {
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 13px;
+  }
+  .article ul, .article ol {
+    margin: 0 0 22px;
+    padding-left: 24px;
+  }
+  .article li { margin: 6px 0; }
+  .article table {
+    width: 100%;
+    margin: 24px 0 28px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .article th, .article td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .article th {
+    background: var(--accent-soft);
+    color: #c8ddff;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .article tr:last-child td { border-bottom: 0; }
+  .article blockquote {
+    margin: 24px 0;
+    padding: 14px 20px;
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+  }
+  .article figure {
+    margin: 32px 0 38px;
+  }
+  .article figure img {
+    display: block;
+    width: 100%;
+    max-height: 620px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #090a0b;
+  }
+  .article figcaption {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .article .error {
+    padding: 18px;
+    border: 1px solid #d03b3b;
+    border-radius: 12px;
+    color: #ffb4b4;
+    background: #35191b;
+  }
+  .article-footer {
+    max-width: 900px;
+    margin: 22px auto 0;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  @media (max-width: 640px) {
+    .masthead { padding: 18px 18px 8px; }
+    .article-shell { margin-top: 12px; padding: 0 12px; }
+    .article { padding: 28px 0; }
+    .article table { display: block; overflow-x: auto; white-space: nowrap; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <a href="../">Token Economy</a>
+  <span>Research note · 20 September 2026</span>
+</header>
+
+<main class="article-shell">
+  <article class="article" id="article">
+    <p>Loading article…</p>
+  </article>
+  <p class="article-footer"><a href="../">Back to the presentation</a> · <a href="token-economy.md">Read the Markdown source</a></p>
+</main>
+
+<script>
+(() => {
+  const root = document.getElementById("article");
+
+  const escapeHtml = (value) => value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+  const inline = (value) => {
+    const tokens = [];
+    const stash = (html) => {
+      const key = `\u0000${tokens.length}\u0000`;
+      tokens.push(html);
+      return key;
+    };
+    let text = escapeHtml(value);
+    text = text.replace(/`([^`]+)`/g, (_, code) => stash(`<code>${code}</code>`));
+    text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_, alt, src) =>
+      stash(`<figure><img src="${src}" alt="${alt}" loading="lazy"><figcaption>${alt}</figcaption></figure>`));
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_, label, url) =>
+      stash(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`));
+    text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    return text.replace(/\u0000(\d+)\u0000/g, (_, index) => tokens[Number(index)]);
+  };
+
+  const isTableSeparator = (line) => /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line);
+  const tableCells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+
+  const render = (source) => {
+    const lines = source.replace(/\r\n/g, "\n").split("\n");
+    const html = [];
+    let paragraph = [];
+    let listType = null;
+    let code = false;
+    let codeLines = [];
+
+    const flushParagraph = () => {
+      if (!paragraph.length) return;
+      html.push(`<p>${inline(paragraph.join(" "))}</p>`);
+      paragraph = [];
+    };
+
+    const closeList = () => {
+      if (!listType) return;
+      html.push(`</${listType}>`);
+      listType = null;
+    };
+
+    const flushCode = () => {
+      if (!code) return;
+      html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      codeLines = [];
+      code = false;
+    };
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      if (line.startsWith("```")) {
+        flushParagraph();
+        closeList();
+        if (code) flushCode();
+        else code = true;
+        continue;
+      }
+      if (code) {
+        codeLines.push(line);
+        continue;
+      }
+      if (!line.trim()) {
+        flushParagraph();
+        closeList();
+        continue;
+      }
+      const heading = line.match(/^(#{1,3})\s+(.+)$/);
+      if (heading) {
+        flushParagraph();
+        closeList();
+        const level = heading[1].length;
+        html.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+        continue;
+      }
+      const image = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+      if (image) {
+        flushParagraph();
+        closeList();
+        html.push(inline(line));
+        continue;
+      }
+      if (line.startsWith("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+        flushParagraph();
+        closeList();
+        const headers = tableCells(line);
+        const rows = [];
+        i += 2;
+        while (i < lines.length && lines[i].trim().startsWith("|")) {
+          rows.push(tableCells(lines[i]));
+          i += 1;
+        }
+        i -= 1;
+        html.push(`<table><thead><tr>${headers.map((cell) => `<th>${inline(cell)}</th>`).join("")}</tr></thead><tbody>`);
+        rows.forEach((row) => {
+          html.push(`<tr>${row.map((cell) => `<td>${inline(cell)}</td>`).join("")}</tr>`);
+        });
+        html.push("</tbody></table>");
+        continue;
+      }
+      const ordered = line.match(/^\d+\.\s+(.+)$/);
+      const unordered = line.match(/^-\s+(.+)$/);
+      if (ordered || unordered) {
+        flushParagraph();
+        const nextType = ordered ? "ol" : "ul";
+        if (listType !== nextType) {
+          closeList();
+          listType = nextType;
+          html.push(`<${listType}>`);
+        }
+        html.push(`<li>${inline((ordered || unordered)[1])}</li>`);
+        continue;
+      }
+      closeList();
+      paragraph.push(line.trim());
+    }
+    flushParagraph();
+    closeList();
+    flushCode();
+    return html.join("\n");
+  };
+
+  fetch("token-economy.md")
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.text();
+    })
+    .then((markdown) => { root.innerHTML = render(markdown); })
+    .catch((error) => {
+      root.innerHTML = `<p class="error">The article could not be loaded: ${escapeHtml(error.message)}</p>`;
+    });
+})();
+</script>
+</body>
+</html>
