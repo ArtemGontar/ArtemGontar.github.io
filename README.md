@@ -13,7 +13,7 @@ The credentials section includes the consolidated certification record and publi
 - `experience/` — experience dossier and downloadable experience-focused CV.
 - `blog/` — long-form articles and social launch copy.
 - `decks/` — presentation content.
-- `assets/` — shared images used by the homepage, articles, and decks.
+- `assets/` — shared images and the site favicon used by the homepage, articles, and decks.
 - `styles/site.css` — homepage visual system.
 - `styles/experience.css` — experience dossier and print/PDF visual system.
 - `.github/workflows/pages.yml` — GitHub Pages deployment.

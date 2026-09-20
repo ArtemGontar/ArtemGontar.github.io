@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Artsiom Hontar</title>
+  <defs>
+    <linearGradient id="core" x1="15" y1="10" x2="50" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8ee6b3"/>
+      <stop offset="1" stop-color="#78d8ff"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="10" y1="8" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78d8ff"/>
+      <stop offset="1" stop-color="#8ee6b3"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0b0d0f"/>
+  <circle cx="32" cy="32" r="23" fill="none" stroke="url(#orbit)" stroke-opacity=".5" stroke-width="1.5"/>
+  <path d="M13 43c9-7 17-11 25-15 6-3 10-6 13-11" fill="none" stroke="#78d8ff" stroke-linecap="round" stroke-opacity=".55" stroke-width="1.5"/>
+  <path d="M16 18c7 5 13 9 20 12 6 3 10 7 13 14" fill="none" stroke="#8ee6b3" stroke-linecap="round" stroke-opacity=".42" stroke-width="1.5"/>
+  <circle cx="12" cy="43" r="3" fill="#8ee6b3"/>
+  <circle cx="51" cy="17" r="3" fill="#78d8ff"/>
+  <circle cx="49" cy="45" r="2.5" fill="#ffcc76"/>
+  <circle cx="32" cy="32" r="14" fill="url(#core)"/>
+  <path d="m24.5 41 6.8-18h1.5l6.7 18h-3.2l-1.5-4.5h-6.1L27.2 41Zm5.1-7.1h4.4l-2.2-6.5Z" fill="#071014"/>
+</svg>
