@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="A practical framework for measuring verified engineering output per dollar in coding-agent workflows.">
+<meta name="description" content="A hands-on guide to model routing, context control, compression, caching, and verified engineering output per dollar.">
 <meta name="theme-color" content="#101214">
-<meta property="og:title" content="Token Economy: How to Spend an AI Coding Budget Like an Engineer">
-<meta property="og:description" content="A practical framework for measuring verified engineering output per dollar in coding-agent workflows.">
+<meta property="og:title" content="Token Economy: Spend Tokens like an AI Engineer">
+<meta property="og:description" content="A hands-on guide to model routing, context control, compression, caching, and verified engineering output per dollar.">
 <meta property="og:image" content="https://artemgontar.github.io/assets/harnesstax.png">
 <meta property="og:type" content="article">
-<title>Token Economy: How to Spend an AI Coding Budget Like an Engineer</title>
+<title>Token Economy: Spend Tokens like an AI Engineer</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <style>
   :root {
@@ -72,17 +72,17 @@
   }
   .masthead nav a:hover { color: #ffffff; }
   .article-shell {
-    max-width: 1080px;
+    max-width: 1200px;
     margin: 24px auto 72px;
     padding: 0 28px;
   }
   .article {
-    max-width: 900px;
+    max-width: 1080px;
     margin: 0 auto;
     padding: clamp(28px, 5vw, 64px) 0;
   }
   .article h1 {
-    max-width: 760px;
+    max-width: 980px;
     margin: 0 0 12px;
     font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(38px, 6vw, 68px);
@@ -108,10 +108,13 @@
     font-size: 14px;
   }
   .article p {
-    max-width: 78ch;
+    max-width: none;
     margin: 0 0 18px;
     line-height: 1.75;
+    text-align: justify;
+    text-justify: inter-word;
   }
+  .article > p:first-of-type { text-align: left; }
   .article strong { color: #ffffff; }
   .article code {
     padding: 2px 5px;
@@ -203,7 +206,7 @@
     background: #35191b;
   }
   .article-footer {
-    max-width: 900px;
+    max-width: 1080px;
     margin: 22px auto 0;
     color: var(--muted);
     font-size: 13px;

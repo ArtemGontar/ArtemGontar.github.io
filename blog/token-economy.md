@@ -1,288 +1,278 @@
-# Token Economy: How to Spend an AI Coding Budget Like an Engineer
+# Token Economy: Spend Tokens like an AI Engineer
 
 *Artsiom Hontar · September 20, 2026*
 
 ## Abstract
 
-Coding-agent cost is often discussed as if it were a property of the model alone.
-In practice, the bill is produced by a system: model, harness, tools, context, cache behavior, retries, and human intervention.
-This article presents a practical framework for reducing that system cost without turning token minimization into the goal.
-The better objective is **verified work per dollar**.
-The evidence combines public benchmark results, published tooling evaluations, and observations from high-volume day-to-day agent use.
+AI coding cost is not a model property.
+It is a systems property created by the model, harness, tools, context, cache, retries, and human decisions around the task.
 
-The main conclusions are straightforward:
-
-1. Model choice should follow task complexity and failure cost, not model prestige.
-2. Harness choice can change cost materially even when success rates remain close.
-3. Context should be isolated, compressed, and kept below the point where retrieval quality degrades.
-4. Prompt caching is an operational discipline, not a feature that can be enabled once and forgotten.
-5. The useful unit of measurement is a closed and verified task, pull request, or incident outcome.
-
-This is a field guide rather than a new benchmark.
-Numbers from external benchmarks are attributed to their source, while local captures and personal workflow observations are labeled as such.
+The practical target is **verified engineering output per dollar**.
+This article turns the Token Economy presentation into an operating guide for choosing a model, controlling context, and stopping wasteful agent loops before they become expensive.
 
 ## TL;DR
 
-Treat an AI coding workflow as a production system, not as a model picker.
-Choose the model and harness together, starting with the least expensive pair that can plausibly close the task.
-Keep interfaces narrow, compress noisy output before it enters context, and isolate broad exploration from the main working thread.
-Protect stable prompt prefixes so caching can work, and intervene when retries or context growth stop producing new information.
-Measure **cost per verified task** alongside success rate, retry rate, context burn, and human recovery time.
+Use three model tiers instead of one permanent default:
 
-## Evidence base
+1. **Cheap** for mechanical edits, formatting, triage, and predictable transformations.
+2. **Medium** for most implementation work, tests, and routine pull requests.
+3. **Frontier** for ambiguous architecture, difficult debugging, and high-blast-radius decisions.
 
-This article is a synthesis of public benchmark results, open-source tooling evaluations, and operational observations from a high-volume coding-agent workflow.
-It does not claim that one tool or harness wins every workload.
+Choose the model and harness together.
+Keep tool interfaces narrow, load Skills and tool schemas on demand, compress command output before it enters context, and keep related work inside the cache window.
+Measure cost per closed task, not tokens in isolation.
+When the agent repeats a failed strategy, change the strategy or take the task back.
 
-| Source | Evidence used here | Status |
-|---|---|---|
-| HarnessTax | Matched model-harness comparisons on SWE-bench Lite and Terminal-Bench 2.0 | Public benchmark |
-| DeepSWE | Cost-aware model and reasoning-effort comparison for software-engineering tasks | Public benchmark |
-| gh-axi | CLI-versus-MCP GitHub task comparison | Public evaluation |
-| Headroom | Wire-layer compression methods and evaluation results | Open-source project |
-| RTK | Shell-output compression and savings history | Local workflow capture |
-| Token Economy deck | Context, cache, attribution, and operating recommendations | Practitioner synthesis |
+## The unit: a verified task
 
-The external studies use different task sets, evaluators, pricing assumptions, and execution environments.
-Their numbers should therefore be read as evidence for mechanisms and trade-offs, not as a single shared leaderboard.
-
-## The unit of optimization is a closed task
-
-An agent can consume fewer tokens and still be more expensive if it requires more retries, more review, or more human recovery.
-The useful denominator is not tokens; it is a verified result.
+An agent can use fewer tokens and still cost more if it needs retries, review, or human recovery.
+The useful unit is a closed task with a verified result.
 
 ```text
 cost per closed task = total agent cost / successfully verified tasks
 ```
 
-For pull-request work, the same idea becomes:
+For a pull request, include the work that happens after the model stops:
 
 ```text
-cost per accepted PR = total agent cost / PRs accepted after human review
+cost per accepted PR = agent cost + human recovery cost / accepted PRs
 ```
 
-This changes the questions we ask.
-Instead of asking which model is cheapest, ask which model and operating setup closes this class of task at the lowest reliable cost.
-Instead of asking whether a context window is large, ask whether the agent can still retrieve the relevant fact after the context has grown.
-Instead of asking whether a tool integration is convenient, ask how much context it adds on every turn and whether it improves the outcome enough to justify that cost.
+This changes the question from "Which model is cheapest?" to "Which setup closes this type of work reliably at the lowest total cost?"
 
-## Finding 1: Route by task, not by habit
+## Finding 1: Route work through three model tiers
 
-The expensive mistake is not always choosing an expensive model.
-It is choosing a model without considering the cost of failure.
-A cheap model is often the correct choice for mechanical edits, formatting, triage, and well-bounded transformations.
-A mid-tier model is usually the right default for specified feature work, tests, and routine pull requests.
-A frontier model earns its cost when the task is genuinely ambiguous, the blast radius is high, or repeated attempts on a lower tier have stopped producing new information.
+The most useful model decision is not a leaderboard ranking.
+It is a routing decision made before the task starts.
 
-The practical routing rule is:
+### Cheap: predictable work
 
-1. Start with the least expensive model that can plausibly solve the task.
-2. Escalate after repeated failures or a clear reasoning bottleneck.
-3. Once the hard plan exists, de-escalate the mechanical execution when possible.
-4. Stop multiplying turns when the agent is repeating the same failed strategy.
+Use the cheap tier for mechanical edits, formatting, renaming, simple migrations, issue triage, changelog updates, and transformations with an obvious acceptance check.
+Examples include renaming a field across many files, converting a configuration format, or classifying a queue of GitHub issues.
 
-This is not an argument for always using the cheapest model.
-It is an argument for paying for capability when capability is the bottleneck.
+Typical examples are Claude Haiku or GPT-5.6 Luna at high reasoning.
+The model does not need to invent the design; it needs to execute a bounded operation without wasting context.
 
-## Finding 2: The harness is part of the model choice
+### Medium: the default implementation tier
 
-A coding agent is not just a model behind a chat interface.
-The harness controls the loop, tools, system instructions, context construction, retries, and stopping behavior.
-That means a model evaluation that ignores the harness is incomplete.
+Use the medium tier for well-specified features, tests, bug fixes with a known direction, routine pull requests, and most day-to-day engineering.
+This is the tier that should carry the largest share of normal work because it balances capability, cost, and speed.
 
-HarnessTax evaluates 21 model-harness pairs across seven models and three harnesses: Claude Code, Codex CLI, and Pi.
-The study uses the same 30 tasks from SWE-bench Lite and Terminal-Bench 2.0, with three runs per task and official benchmark evaluators.
-Its most important result is not a universal winner; it is the size of the cost difference for similar success rates.
+Typical examples are Claude Sonnet or GPT-5.6 Terra.
+Start here when the task has a clear result but still requires repository navigation, implementation choices, and verification.
 
-On SWE-bench Lite, Claude Code costs about 2.0 times as much as Pi across shared models while the average harness effect on success stays within roughly plus or minus 2 percent.
+### Frontier: buy judgment only when judgment is the bottleneck
 
-On Terminal-Bench 2.0, Claude Code costs about 1.5 times as much as Pi while the average success-rate effect stays within roughly plus or minus 5 percent.
+Use the frontier tier for ambiguous architecture, production incidents with no clear cause, risky migrations, difficult debugging, and decisions with a large blast radius.
+Do not use it for work that the cheap tier can finish in seconds.
 
-The same study finds that an alternative harness has the highest observed success rate in nine of twelve comparisons across the Anthropic and OpenAI models it examines.
-The conclusion is not that Pi should replace every other harness.
-The conclusion is that the model-harness pair should be measured together.
-A default harness can create a hidden **harness tax** before the task has produced any useful work.
+Typical examples are Claude Opus or Fable and GPT-5.6 Sol.
+Once the frontier model has produced a sound plan, move mechanical execution back to the medium or cheap tier when the handoff is safe.
+
+The routing loop is simple:
+
+1. Start with the cheapest tier that can plausibly close the task.
+2. Escalate one tier after repeated failures or a real reasoning bottleneck.
+3. Do not spend three more turns repeating the same failed approach.
+4. De-escalate after the hard decision is made.
+
+The DeepSWE benchmark makes the economic shape visible.
+Its leaderboard plots score against average cost per task across 113 tasks, 91 repositories, five languages, and 57 model/reasoning configurations.
+The useful point is not the highest dot; it is the knee where more spend stops buying meaningful task completion.
+
+![DeepSWE leaderboard showing score versus average cost per task](../assets/deepswe-bench.png)
+
+The benchmark is designed around contamination-free tasks and behavioral verification.
+That makes it useful for comparing cost and effectiveness, but it still does not choose your model for you.
+Use the chart to identify candidates, then validate the routing rule on your own repositories and task mix.
+
+## Finding 2: Benchmark the model and harness as one system
+
+A coding agent is not just a model behind a chat box.
+The harness controls the system prompt, tool schemas, context construction, retries, stopping behavior, and the amount of work that happens before the first useful tool call.
+
+HarnessTax compared 21 model-harness pairs across seven models and three harnesses: Claude Code, Codex CLI, and Pi.
+It used the same 30 tasks from SWE-bench Lite and Terminal-Bench 2.0, with three runs per task and official evaluators.
+
+On SWE-bench Lite, Claude Code cost about 2.0 times as much as Pi across shared models while the average harness effect on success stayed within roughly plus or minus 2 percent.
+On Terminal-Bench 2.0, Claude Code cost about 1.5 times as much as Pi while the average success-rate effect stayed within roughly plus or minus 5 percent.
+The same study found an alternative harness had the highest observed success rate in nine of twelve comparisons across the Anthropic and OpenAI models it examined.
 
 ![HarnessTax performance-cost frontier across model and harness pairs](../assets/harnesstax.png)
 
-## Finding 3: Initial context is already part of the bill
+The practical conclusion is not "always use Pi."
+It is "measure the pair."
+Keep the model fixed, change the harness, and compare cost per verified task, initial context, turns, retries, and success.
+A default harness can create a hidden tax before the task has produced useful work.
 
-A harness can spend tokens before the first meaningful tool call.
-HarnessTax reports that Claude Code's average initial context on SWE-bench Lite is more than ten times Pi's across the evaluated models.
-That context includes instructions, tool schemas, and the task prompt.
-Some of that overhead may buy useful behavior, while some may be redundant for a specific workload.
-The only reliable way to know the difference is to measure it against task success and cost.
-This is why context engineering belongs near the beginning of an agent architecture, not at the end of a cost dashboard.
+## Finding 3: Pay for the interface only when you use it
 
-## Finding 4: Reduce at the interface boundary
+The cheapest token is the token that never enters context.
+Tool integrations are part of the bill because their schemas, help text, and output are carried through the agent loop.
 
-The cheapest token is the token that never enters the model context.
-This principle applies at several boundaries.
+In the gh-axi comparison, an agent-tuned CLI completed the evaluated GitHub tasks with 46,462 input tokens, three turns, and 100 percent success.
+The evaluated GitHub MCP configurations used 137,409 to 175,757 input tokens, more turns, and lower success in that test.
 
-### Prefer narrow interfaces when they carry less state
+| Interface | Input tokens | Cost per task | Turns | Success |
+|---|---:|---:|---:|---:|
+| gh-axi, agent-tuned CLI | 46,462 | $0.050 | 3 | 100% |
+| gh CLI, raw | 47,076 | $0.054 | 3 | 86% |
+| GitHub MCP, code execution | 137,409 | $0.101 | 7 | 84% |
+| GitHub MCP + ToolSearch | 153,621 | $0.147 | 8 | 82% |
+| GitHub MCP, eager schemas | 175,757 | $0.148 | 6 | 87% |
 
-In the gh-axi CLI-versus-MCP benchmark, the agent-tuned CLI completed the evaluated GitHub tasks with 46,462 input tokens, three turns, and a 100 percent success rate.
-The same table reports 137,409 to 175,757 input tokens for the evaluated GitHub MCP configurations, with more turns and lower success rates in that test.
-This does not prove that every CLI is better than every MCP server.
-It does show the mechanism clearly: eager tool schemas and broad integration surfaces can be charged on every turn, including turns that never use the tool.
-A narrow CLI or on-demand tool search can keep the interface closer to the actual task.
+This does not make every CLI better than every MCP server.
+It shows the mechanism: eager schemas can be charged on every turn, including turns that never use the tool.
+Use a narrow CLI, on-demand ToolSearch, or a tightly scoped MCP server when the task does not need a broad integration surface.
 
-### Package repeated knowledge as a Skill
+## Finding 4: Load knowledge on demand
 
-Skills are a useful middle layer between a long permanent prompt and an always-on tool server.
-They keep the pointer available while loading the full procedure only when a task matches.
-This works well for file formats, code-review standards, release runbooks, incident procedures, and repository conventions.
-The design rule is simple:
+Skills are a useful middle layer between a huge permanent prompt and an always-on tool server.
+Keep a short pointer available, then load the full procedure only when the task matches.
+
+This works for file formats, code-review standards, release runbooks, incident procedures, repository conventions, and other knowledge that is complex but not needed on every turn.
 
 ```text
 load the pointer broadly; load the procedure narrowly
 ```
 
-### Compress output before it reaches the model
+ToolSearch applies the same idea to MCP.
+Instead of loading every schema up front, the agent searches an index and pulls in only the schema it needs.
+That can reduce eager-load overhead, although the benchmark still showed a larger context surface than the tuned CLI.
 
-Shell output, logs, JSON, stack traces, and search results often contain repetition that is useful to a human but wasteful in a model context.
-RTK and Headroom are examples of tools that attack this cost at different layers.
-RTK rewrites noisy shell output before it reaches the agent.
-Headroom applies structural deduplication, re-encoding, salience-aware truncation, and semantic chunking to tool output and retrieved context.
+Context engineering is the next boundary.
+Isolate broad exploration in a subagent or short-lived worker, then return the decision and evidence rather than the full transcript.
+Start a clean context when the current one has become a liability.
+
+## Finding 5: Compress before output reaches the model
+
+Shell output, logs, JSON, stack traces, and search results often contain repetition that is useful to a human but expensive for a model.
+Compress at the interface boundary instead of asking the model to summarize the same noise after it has already entered context.
+
+RTK rewrites noisy shell output from Git, test runners, package managers, and Kubernetes into a leaner equivalent before the agent sees it.
+In one local capture, 6,971 commands saved 10.0 million tokens, or 57.6 percent of input, across 17.3 million input and 7.3 million output tokens.
+The largest savings came from repetitive commands such as lint, diff, and test output.
 
 ![RTK token savings summary from a local workflow capture](../assets/rtk-gain.png)
 
-The safe version of compression is not arbitrary summarization.
-It preserves the information required for the next decision and removes repeated structure around it.
+Headroom attacks the same problem at the wire layer with structural deduplication, re-encoding, salience-aware truncation, and semantic chunking.
+The safe version of compression preserves the information required for the next decision and removes repeated structure around it.
+Do not summarize away the error line, the failing assertion, or the file and line that the next action depends on.
 
-## Finding 5: More context is not automatically better context
+## Finding 6: Protect stable prompt prefixes
 
-A large context window removes one hard limit.
-It does not remove retrieval degradation, attention dilution, or the cost of carrying irrelevant history forward.
-The practical pattern is to isolate exploration.
-A subagent can read many files, run commands, and fail a few times without forcing all of that intermediate noise into the parent context.
-The parent should receive the decision-relevant result, not the full transcript of exploration.
+Prompt caching makes repeated context much cheaper, but normal workflow changes can destroy the benefit.
+Switching providers or models can rebuild the prefix.
+Changing the system prompt or tool configuration can invalidate it.
+Letting a task sit beyond the provider time-to-live can force another write.
 
-Long-context retrieval benchmarks also make the trade-off visible.
-In the MRCR v2 results shown in the deck, even a frontier model loses retrieval accuracy as the input grows from hundreds of thousands of tokens toward one million.
-The operating rule is therefore:
-
-1. Keep the active working context bounded.
-2. Move broad exploration into isolated subagents or short-lived workers.
-3. Summarize decisions and evidence, not every command.
-4. Start a clean context when the current one becomes a liability.
-
-For many coding tasks, a smaller, curated context is more useful than the largest available window.
-
-## Finding 6: Prompt caching is an operating discipline
-
-Prompt caching can make repeated context much cheaper.
-It can also be defeated by normal workflow behavior.
-
-Switching providers or models mid-session often rebuilds the cached prefix.
-Letting a task sit beyond the provider's time-to-live window can force another cache write.
-Changing the system prompt or tool configuration can invalidate the prefix even when the repository has not changed.
-
-The practical rules are:
+Use these operating rules:
 
 1. Keep related turns on one provider and model when possible.
 2. Batch related work inside the cache time-to-live window.
 3. Keep stable instructions and tool configuration stable.
 4. Treat a provider switch as a cache reset in the cost model.
 
-The exact prices and time-to-live values change.
-The operational principle does not.
-Cache value comes from stable prefixes and close reuse.
+Cache reads are often about 10 times cheaper than fresh input.
+A write premium of 1.25 to 2 times pays for itself after one reuse, but only if the prefix stays stable long enough to be read again.
 
 ![Prompt caching keeps stable prefixes cheap and reprocesses changed prefixes](../assets/prompt-cache.png)
 
-## Finding 7: Observe drift, not just spend
+## Finding 7: Watch drift while the task is running
 
 A monthly invoice is too late to diagnose an agent loop.
-The useful signals are visible during the session:
+Watch the session itself:
 
 - Context occupancy and growth rate.
 - Cache-read ratio.
 - Tokens and cost per minute.
-- Repeated tool calls.
-- Repeated file reads.
+- Repeated tool calls and repeated file reads.
 - Failed commands that recur without a strategy change.
 - Human interventions and recovery actions.
 
-A rising burn rate is often a symptom of exploration that has stopped producing information.
-Three failed attempts with the same approach should trigger a new strategy, not a fourth prompt that restates the same request.
-Observability should connect session cost to the outcome that justified it.
-For engineering work, useful attribution keys include repository, branch, pull request, issue, task type, model, harness, and human review time.
-The tooling is still immature, but the measurement model is not.
+Three failed attempts with the same approach should trigger a new strategy, not a fourth prompt that restates the request.
+Use `/compact`, checkpoint the work, split the task, or take the next decision yourself.
+
+For attribution, tag sessions with repository, branch, pull request, issue, task type, model, harness, and human review time.
+Session cost tells you what happened.
+Git and PR metadata tell you why the work was worth doing.
+
+## Finding 8: Keep humans on the decisions that matter
+
+AI and human work are not a competition.
+They are a budget allocation problem.
+
+Humans should own problem framing, architecture constraints, risk tolerance, and final review.
+Agents should carry implementation, repetitive transformations, test generation, search, and other work with a clear verification loop.
+
+The more ambiguous or irreversible the decision, the more human judgment belongs in the loop.
+The more mechanical and testable the operation, the more useful delegation becomes.
+Do not confuse an unsupervised loop with an autonomous system; it may only be an expensive loop with no owner.
 
 ## A practical operating model
 
-The following loop is small enough to use every day.
+Use this loop for a real task:
 
-### Step 1: Define the result
+### 1. Define the result
 
 Write down what counts as done before the agent starts.
-For a code change, that may include tests, review criteria, and a behavior-level acceptance check.
-For an incident, it may include mitigation, root-cause evidence, and a rollback plan.
+For code, include tests, review criteria, and a behavior-level acceptance check.
+For an incident, include mitigation, root-cause evidence, and a rollback plan.
 
-### Step 2: Choose the model and harness together
+### 2. Pick the tier and harness
 
-Select the least expensive pair that can plausibly satisfy the result.
-Do not assume a provider's default harness is the cheapest or most effective pairing for every workload.
+Choose the cheapest model-harness pair that can plausibly close the result.
+Record the choice so a later comparison has a baseline.
 
-### Step 3: Reduce the interface
+### 3. Reduce the interface
 
-Prefer narrow commands, focused search, on-demand skills, and compressed output.
-Avoid loading every available tool schema into every turn unless the task truly needs that surface.
+Use focused search, narrow commands, on-demand Skills, ToolSearch, and compressed output.
+Do not load every tool schema or every repository document by default.
 
-### Step 4: Isolate exploration
+### 4. Isolate exploration
 
-Delegate broad repository discovery, independent research, and noisy experiments into separate contexts.
-Return a compact result with evidence and unresolved questions.
+Let a subagent or short-lived worker handle broad discovery and noisy experiments.
+Return decisions, evidence, and unresolved questions to the main task.
 
-### Step 5: Protect the cache
+### 5. Protect the cache
 
-Keep stable work together and avoid unnecessary provider or system-prompt changes mid-task.
+Keep stable work together.
+Avoid unnecessary provider, model, system-prompt, and tool-configuration changes in the middle of the task.
 
-### Step 6: Intervene on drift
+### 6. Intervene on drift
 
-Watch for repeated actions, escalating context, and rising cost without new evidence.
-Change the strategy or take the task back before the loop compounds.
+When cost rises without new evidence, change the strategy.
+Escalate one tier, split the task, compact the context, or take the work back.
 
-### Step 7: Attribute the result
+### 7. Verify and attribute
 
-Record the cost against the task, branch, pull request, or incident that consumed it.
-Without attribution, optimization becomes a collection of anecdotes.
+Close the loop with tests, review, and the acceptance check.
+Record cost against the task, branch, pull request, or incident that consumed it.
 
-## What to measure
+## The scorecard
 
-A lightweight scorecard can be built from five measures.
+Track a small set of measures:
 
 | Measure | Definition | Why it matters |
 |---|---|---|
 | Success rate | Verified tasks completed correctly | Prevents cost reduction from hiding quality loss |
-| Cost per closed task | Total agent cost divided by verified successes | Measures the actual economic unit |
+| Cost per closed task | Total agent cost divided by verified successes | Measures the real economic unit |
 | Retry rate | Attempts that repeat a failed strategy | Exposes weak routing and runaway loops |
-| Context burn rate | Context tokens consumed per unit of useful progress | Shows when history is becoming overhead |
-| Human recovery time | Time spent correcting or re-running agent work | Captures costs missing from the API invoice |
+| Context burn rate | Context tokens consumed per unit of useful progress | Shows when history becomes overhead |
+| Human recovery time | Time spent correcting or rerunning agent work | Captures cost missing from the API invoice |
 
 The best setup is not the one that wins one metric in isolation.
-It is the setup that stays near the efficient frontier across quality, cost, latency, and review burden.
-
-## What this does not mean
-
-It does not mean that simple harnesses are always better; richer harness features may help on workloads that were not included in the public comparisons.
-It does not mean that MCP is always a bad choice.
-An MCP server can be the right interface when discoverability, permissions, or structured resources are more important than eager schema cost.
-It does not mean that token count is the only cost.
-Wall-clock time, failure recovery, human review, infrastructure, and operational risk also belong in the decision.
-It does not mean that benchmark results transfer automatically to production repositories.
-SWE-bench Lite, Terminal-Bench 2.0, and gh-axi measure useful slices of the problem, while real work includes evolving requirements, private code, developer feedback, partial knowledge, and tasks that span sessions.
-The responsible conclusion is to use public evidence to choose what to measure next in your own workflow.
+It is the setup that stays efficient across quality, cost, latency, and review burden.
 
 ## Conclusion
 
-AI coding cost is a systems property.
-The model matters, but so do the harness, tools, context, cache, loop, and stopping rule around it.
-The strongest practical strategy is not to minimize tokens blindly.
-Spend tokens where they increase the probability of a verified result, and remove them where they only carry repetition, stale history, or unused capability.
-Choose the model and harness as a pair, measure cost per closed task, compress before context, isolate exploration, protect stable prefixes, and intervene when the agent stops producing new information.
-That is the core of a token economy: not fewer tokens at any cost, but more verified engineering output per dollar.
+A token economy is not a race to use fewer tokens.
+It is the discipline of spending tokens where they increase the probability of a verified result and removing them where they only carry repetition, stale history, or unused capability.
+
+Route work through cheap, medium, and frontier tiers.
+Benchmark the model and harness together.
+Keep interfaces narrow, load knowledge on demand, compress before context, protect stable prefixes, and intervene when the agent stops producing new information.
+That is how an AI engineer turns a token budget into dependable engineering output.
 
 ## Sources and further reading
 

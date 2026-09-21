@@ -104,9 +104,9 @@ That framing is incomplete.
 
 The actual spend is produced by a system: model, harness, tools, context construction, cache behavior, retries, and human recovery.
 
-I wrote a research-style field guide called **Token Economy: How to Spend an AI Coding Budget Like an Engineer**.
+I wrote a hands-on field guide called **Token Economy: Spend Tokens like an AI Engineer**.
 
-The article combines public benchmark evidence with practical observations from high-volume agent workflows.
+The article turns the presentation into practical routing, context, caching, compression, and observability rules.
 
 The main ideas are:
 
