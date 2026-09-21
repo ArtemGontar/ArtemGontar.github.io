@@ -12,15 +12,10 @@ This article turns the Token Economy presentation into an operating guide for ch
 
 ## TL;DR
 
-Use three model tiers instead of one permanent default:
-
-1. **Cheap** for mechanical edits, formatting, triage, and predictable transformations.
-2. **Medium** for most implementation work, tests, and routine pull requests.
-3. **Frontier** for ambiguous architecture, difficult debugging, and high-blast-radius decisions.
-
-Choose the model and harness together.
-Keep tool interfaces narrow, load Skills and tool schemas on demand, compress command output before it enters context, and keep related work inside the cache window.
-Measure cost per closed task, not tokens in isolation.
+Choose the right model for the right task: cheap for mechanical work, medium for routine implementation, and frontier when judgment is the bottleneck.
+Then optimize the rest of the system around it: benchmark the model and harness together, keep interfaces narrow, use Skills and load tool schemas on demand, compress command output, protect stable cache prefixes, and watch for drift.
+Keep humans on architecture, risk, and final decisions.
+Measure cost per verified task, not tokens in isolation.
 When the agent repeats a failed strategy, change the strategy or take the task back.
 
 ## The unit: a verified task
@@ -213,46 +208,6 @@ Agents should carry implementation, repetitive transformations, test generation,
 The more ambiguous or irreversible the decision, the more human judgment belongs in the loop.
 The more mechanical and testable the operation, the more useful delegation becomes.
 Do not confuse an unsupervised loop with an autonomous system; it may only be an expensive loop with no owner.
-
-## A practical operating model
-
-Use this loop for a real task:
-
-### 1. Define the result
-
-Write down what counts as done before the agent starts.
-For code, include tests, review criteria, and a behavior-level acceptance check.
-For an incident, include mitigation, root-cause evidence, and a rollback plan.
-
-### 2. Pick the tier and harness
-
-Choose the cheapest model-harness pair that can plausibly close the result.
-Record the choice so a later comparison has a baseline.
-
-### 3. Reduce the interface
-
-Use focused search, narrow commands, on-demand Skills, ToolSearch, and compressed output.
-Do not load every tool schema or every repository document by default.
-
-### 4. Isolate exploration
-
-Let a subagent or short-lived worker handle broad discovery and noisy experiments.
-Return decisions, evidence, and unresolved questions to the main task.
-
-### 5. Protect the cache
-
-Keep stable work together.
-Avoid unnecessary provider, model, system-prompt, and tool-configuration changes in the middle of the task.
-
-### 6. Intervene on drift
-
-When cost rises without new evidence, change the strategy.
-Escalate one tier, split the task, compact the context, or take the work back.
-
-### 7. Verify and attribute
-
-Close the loop with tests, review, and the acceptance check.
-Record cost against the task, branch, pull request, or incident that consumed it.
 
 ## The scorecard
 
