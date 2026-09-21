@@ -125,24 +125,29 @@ This does not make every CLI better than every MCP server.
 It shows the mechanism: eager schemas can be charged on every turn, including turns that never use the tool.
 Use a narrow CLI, on-demand ToolSearch, or a tightly scoped MCP server when the task does not need a broad integration surface.
 
-## Finding 4: Load knowledge on demand
+## Finding 4: Thin harness, fat skills
 
-Skills are a useful middle layer between a huge permanent prompt and an always-on tool server.
-Keep a short pointer available, then load the full procedure only when the task matches.
+Keep the harness small and put detailed procedures in Skills that load only when the task needs them.
+The always-on layer should contain routing rules, safety constraints, and a few reliable entry points.
+The task-specific layer should contain the checklist, examples, and working conventions.
+This keeps every turn cheaper without forcing the model to rediscover the same process.
 
-This works for file formats, code-review standards, release runbooks, incident procedures, repository conventions, and other knowledge that is complex but not needed on every turn.
+Code review is a good example.
+Do not put a long review policy in every prompt and do not load every repository rule for a simple implementation task.
+Load a review Skill when the user asks for a review, then make it drive a concrete sequence: inspect the diff, check the affected call paths, run focused tests, look for regressions, and report findings with file and line references.
+Return the findings and evidence, not the full review procedure.
 
-```text
-load the pointer broadly; load the procedure narrowly
-```
+Matt Pocock's [`grill-me`](https://github.com/mattpocock/skills/tree/main/grill-me) is useful before implementation or review because it challenges unclear requirements, hidden assumptions, and weak trade-offs.
+[`improve-codebase-architecture`](https://github.com/mattpocock/skills/tree/main/improve-codebase-architecture) is useful when a change exposes unclear module boundaries, duplicated responsibilities, or a shallow abstraction.
+These Skills are not permanent prompt decoration: invoke them at the decision point where their questions and checks can change the work.
 
-ToolSearch applies the same idea to MCP.
-Instead of loading every schema up front, the agent searches an index and pulls in only the schema it needs.
-That can reduce eager-load overhead, although the benchmark still showed a larger context surface than the tuned CLI.
+The same rule applies to file-format procedures, release runbooks, incident triage, and repository conventions.
+Keep the pointer discoverable, load the detailed Skill on match, and unload the noise when the decision is complete.
+ToolSearch applies a similar pattern to MCP by finding a schema on demand, although the benchmark still showed a larger context surface than the tuned CLI.
 
-Context engineering is the next boundary.
-Isolate broad exploration in a subagent or short-lived worker, then return the decision and evidence rather than the full transcript.
-Start a clean context when the current one has become a liability.
+When exploration becomes broad, isolate it in a subagent or short-lived worker.
+Bring back the decision, the evidence, and the unresolved risks instead of the entire transcript.
+That is the practical meaning of a thin harness: less permanent context, more deliberate capability at the moment it matters.
 
 ## Finding 5: Compress before output reaches the model
 
